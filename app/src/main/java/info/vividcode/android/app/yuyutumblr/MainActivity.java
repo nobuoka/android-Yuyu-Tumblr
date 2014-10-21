@@ -13,18 +13,23 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.NetworkImageView;
 import com.android.volley.toolbox.Volley;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.app.Activity;
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.support.v4.util.LruCache;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends Activity {
 
@@ -134,31 +139,52 @@ public class MainActivity extends Activity {
         return photo;
     }
 
-    private static class PostsAdapter extends ArrayAdapter<JSONObject> {
-        private final LayoutInflater inflater;
+    public static class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
+        private List<JSONObject> mList;
         private final ImageLoader mImageLoader;
-        public PostsAdapter(Context act, ImageLoader imageLoader) {
-            super(act, android.R.layout.simple_list_item_1);
-            inflater = (LayoutInflater) act.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
+
+        // Provide a reference to the views for each data item
+        // Complex data items may need more than one view per item, and
+        // you provide access to all the views for a data item in a view holder
+        public static class ViewHolder extends RecyclerView.ViewHolder {
+            // each data item is just a string in this case
+            public View mView;
+            public ViewHolder(View v) {
+                super(v);
+                mView = v;
+            }
+        }
+
+        // Provide a suitable constructor (depends on the kind of dataset)
+        public PostAdapter(ImageLoader imageLoader) {
+            mList = new ArrayList<JSONObject>();
             mImageLoader = imageLoader;
         }
-        /**
-         * ListView の各項目の view。
-         */
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            // 再利用できるなら再利用する; できない場合は新たに生成
-            if (convertView == null)
-                convertView = inflater.inflate(R.layout.post, null);
 
+        // Create new views (invoked by the layout manager)
+        @Override
+        public PostAdapter.ViewHolder onCreateViewHolder(ViewGroup parent,
+                                                       int viewType) {
+            // create a new view
+            View v = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.post, parent, false);
+            // set the view's size, margins, paddings and layout parameters...
+            ViewHolder vh = new ViewHolder(v);
+            return vh;
+        }
+
+        // Replace the contents of a view (invoked by the layout manager)
+        @Override
+        public void onBindViewHolder(ViewHolder holder, int position) {
+            // - get element from your dataset at this position
+            // - replace the contents of the view with that element
             try {
-                JSONObject post = getItem(position);
+                JSONObject post = mList.get(position);
                 if (post.getString("type").equals("photo")) {
                     Photo p = getAppropriateSizePhotoObject(post.getJSONArray("photos").getJSONObject(0));
                     //String url = .getJSONObject("original_size").getString("url");
 
-                    NetworkImageView v = (NetworkImageView) convertView.findViewById(R.id.image);
-                    //NetworkImageView v = new NetworkImageView(MainActivity.this);
+                    NetworkImageView v = (NetworkImageView) holder.mView.findViewById(R.id.image);
                     v.setImageUrl(p.url, mImageLoader);
                     v.setMinimumHeight(p.height);
                     v.setMinimumWidth(36);
@@ -175,13 +201,31 @@ public class MainActivity extends Activity {
             } catch (JSONException e) {
                 Log.d("error", "error", e);
             }
-            return convertView;
+        }
+
+        // Return the size of your dataset (invoked by the layout manager)
+        @Override
+        public int getItemCount() {
+            return mList.size();
+        }
+
+        public void add(List<JSONObject> items) {
+            mList.addAll(items);
+            notifyDataSetChanged();
+        }
+
+        public JSONObject getLastItem() {
+            if (mList.size() == 0) return null;
+            return mList.get(mList.size() - 1);
         }
     }
 
+    private SwipeRefreshLayout mSwipeRefreshLayout;
     private RequestQueue mRequestQueue;
     private ImageLoader mImageLoader;
-    private PostsAdapter mAdapter;
+    private RecyclerView mRecyclerView;
+    private PostAdapter mAdapter;
+    private RecyclerView.LayoutManager mLayoutManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -191,13 +235,22 @@ public class MainActivity extends Activity {
         mRequestQueue = Volley.newRequestQueue(this);
         mImageLoader = new ImageLoader(mRequestQueue, new BitmapCache());
 
-        mAdapter = new PostsAdapter(this, mImageLoader);
-
         // スクロール限界までスクロールしてさらに引っ張ると続きを読み込む仕組み
-        OverScrollableListView v = (OverScrollableListView) findViewById(R.id.posts_view);
-        v.setAdapter(mAdapter);
-        v.setOverScrolledEventListener(new Runnable() {
-            @Override public void run() {
+        mRecyclerView = (RecyclerView) findViewById(R.id.posts_view);
+
+        // use a linear layout manager
+        mLayoutManager = new LinearLayoutManager(this);
+        mRecyclerView.setLayoutManager(mLayoutManager);
+
+        // specify an adapter (see also next example)
+        mAdapter = new PostAdapter(mImageLoader);
+        mRecyclerView.setAdapter(mAdapter);
+        mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh_layout);
+
+        mSwipeRefreshLayout.setColorSchemeColors(Color.RED);
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
                 updatePosts();
             }
         });
@@ -247,9 +300,8 @@ public class MainActivity extends Activity {
         String uri = "http://api.tumblr.com/v2/tagged?tag=%E3%82%86%E3%82%86%E5%BC%8F" +
                 "&api_key=fuiKNFp9vQFvjLNvx4sUwti4Yb5yGutBN4Xh10LXZhhRKjWlV4";
 
-        int length = mAdapter.getCount();
-        if (length != 0) {
-            JSONObject post = mAdapter.getItem(length - 1);
+        JSONObject post = mAdapter.getLastItem();
+        if (post != null) {
             try {
                 int lastTimestamp = post.getInt("timestamp");
                 uri += "&before=" + lastTimestamp;
@@ -263,13 +315,15 @@ public class MainActivity extends Activity {
         JsonObjectRequest req = new JsonObjectRequest(uri, null, new Response.Listener<JSONObject>() {
             @Override public void onResponse(JSONObject response) {
                 mUpdating = false;
+                mSwipeRefreshLayout.setRefreshing(false);
                 try {
                     JSONArray posts = response.getJSONArray("response");
+                    List<JSONObject> pp = new ArrayList<JSONObject>();
                     int length = posts.length();
                     for (int i = 0; i < length; ++i) {
-                        JSONObject post = posts.getJSONObject(i);
-                        mAdapter.add(post);
+                        pp.add(posts.getJSONObject(i));
                     }
+                    mAdapter.add(pp);
                 } catch (JSONException err) {
                     Log.d("res", "error", err);
                 }
@@ -277,6 +331,7 @@ public class MainActivity extends Activity {
         }, new Response.ErrorListener() {
             @Override public void onErrorResponse(VolleyError error) {
                 mUpdating = false;
+                mSwipeRefreshLayout.setRefreshing(false);
                 Log.d("res", "error", error);
             }
         });
