@@ -7,8 +7,8 @@ import android.view.View
 import android.view.ViewGroup
 import com.android.volley.toolbox.ImageLoader
 import com.android.volley.toolbox.NetworkImageView
-import info.vividcode.android.app.yuyutumblr.MainActivity
 import info.vividcode.android.app.yuyutumblr.R
+import info.vividcode.android.app.yuyutumblr.usecase.MainApplication
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.ArrayList
@@ -47,7 +47,7 @@ class PostAdapter// Provide a suitable constructor (depends on the kind of datas
         try {
             val post = mList[position]
             if (post.getString("type") == "photo") {
-                val p = MainActivity.getAppropriateSizePhotoObject(post.getJSONArray("photos").getJSONObject(0))
+                val p = MainApplication.getAppropriateSizePhotoObject(post.getJSONArray("photos").getJSONObject(0))
                 //String url = .getJSONObject("original_size").getString("url");
 
                 val v = holder.mView.findViewById<View>(R.id.image) as NetworkImageView

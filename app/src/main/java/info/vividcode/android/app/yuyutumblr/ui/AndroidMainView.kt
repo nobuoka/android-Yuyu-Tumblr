@@ -5,14 +5,14 @@ import android.graphics.Color
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import info.vividcode.android.app.yuyutumblr.MainActivity
+import info.vividcode.android.app.yuyutumblr.usecase.MainView
 import org.json.JSONObject
 
 class AndroidMainView private constructor(
         private val recyclerView: RecyclerView,
         private val swipeRefreshLayout: SwipeRefreshLayout,
         private val adapter: PostAdapter
-) : MainActivity.MainView {
+) : MainView {
 
     private var internalRefreshEventListener: (() -> Unit)? = null
 
