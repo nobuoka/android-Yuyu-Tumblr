@@ -1,6 +1,6 @@
 package info.vividcode.android.app.yuyutumblr.ui
 
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -14,7 +14,7 @@ import org.json.JSONObject
 import java.util.ArrayList
 
 class PostAdapter// Provide a suitable constructor (depends on the kind of dataset)
-(private val mImageLoader: ImageLoader) : RecyclerView.Adapter<PostAdapter.ViewHolder>() {
+(private val mImageLoader: ImageLoader) : androidx.recyclerview.widget.RecyclerView.Adapter<PostAdapter.ViewHolder>() {
     private val mList: MutableList<JSONObject>
 
     val lastItem: JSONObject?
@@ -24,7 +24,7 @@ class PostAdapter// Provide a suitable constructor (depends on the kind of datas
     // Complex data items may need more than one view per item, and
     // you provide access to all the views for a data item in a view holder
     class ViewHolder(// each data item is just a string in this case
-            var mView: View) : RecyclerView.ViewHolder(mView)
+            var mView: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(mView)
 
     init {
         mList = ArrayList()

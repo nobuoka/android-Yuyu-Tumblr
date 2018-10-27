@@ -6,8 +6,8 @@ import com.android.volley.toolbox.Volley
 
 import android.os.Bundle
 import android.app.Activity
-import android.support.v4.widget.SwipeRefreshLayout
-import android.support.v7.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import androidx.recyclerview.widget.RecyclerView
 import android.util.Log
 import android.view.Menu
 import android.view.View
@@ -29,11 +29,11 @@ class MainActivity : Activity() {
 
     private fun createMainView(): MainView {
         // スクロール限界までスクロールしてさらに引っ張ると続きを読み込む仕組み
-        val recyclerView = findViewById<View>(R.id.posts_view) as RecyclerView
+        val recyclerView = findViewById<View>(R.id.posts_view) as androidx.recyclerview.widget.RecyclerView
         val imageLoader = ImageLoader(mRequestQueue, BitmapCache())
         val postAdapter = PostAdapter(imageLoader)
 
-        val swipeRefreshLayout = findViewById<View>(R.id.swipe_refresh_layout) as SwipeRefreshLayout
+        val swipeRefreshLayout = findViewById<View>(R.id.swipe_refresh_layout) as androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 
         return AndroidMainView.create(this, recyclerView, swipeRefreshLayout, postAdapter)
     }
