@@ -5,13 +5,11 @@ import com.android.volley.toolbox.ImageLoader
 import com.android.volley.toolbox.Volley
 
 import android.os.Bundle
-import android.app.Activity
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import androidx.recyclerview.widget.RecyclerView
 import android.util.Log
 import android.view.Menu
 import android.view.View
 import android.widget.Button
+import androidx.appcompat.app.AppCompatActivity
 import info.vividcode.android.app.yuyutumblr.ui.AndroidMainView
 import info.vividcode.android.app.yuyutumblr.ui.PostAdapter
 import info.vividcode.android.app.yuyutumblr.ui.BitmapCache
@@ -19,7 +17,7 @@ import info.vividcode.android.app.yuyutumblr.usecase.MainApplication
 import info.vividcode.android.app.yuyutumblr.usecase.MainView
 import info.vividcode.android.app.yuyutumblr.web.TumblrWebApi
 
-class MainActivity : Activity() {
+class MainActivity : AppCompatActivity() {
 
     private var mRequestQueue: RequestQueue? = null
 
