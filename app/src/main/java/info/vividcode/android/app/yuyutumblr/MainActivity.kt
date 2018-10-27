@@ -6,15 +6,12 @@ import org.json.JSONObject
 import com.android.volley.RequestQueue
 import com.android.volley.Response
 import com.android.volley.toolbox.ImageLoader
-import com.android.volley.toolbox.ImageLoader.ImageCache
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 
 import android.graphics.Color
 import android.os.Bundle
 import android.app.Activity
-import android.graphics.Bitmap
-import android.support.v4.util.LruCache
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -23,6 +20,7 @@ import android.view.Menu
 import android.view.View
 import android.widget.Button
 import info.vividcode.android.app.yuyutumblr.ui.PostAdapter
+import info.vividcode.android.app.yuyutumblr.ui.BitmapCache
 
 import java.util.ArrayList
 
@@ -36,29 +34,6 @@ class MainActivity : Activity() {
     private var mLayoutManager: RecyclerView.LayoutManager? = null
 
     private var mUpdating = false
-
-    private class BitmapCache : ImageCache {
-
-        private val mCache: LruCache<String, Bitmap>
-
-        init {
-            val maxSize = 5 * 1024 * 1024
-            mCache = object : LruCache<String, Bitmap>(maxSize) {
-                override fun sizeOf(key: String, value: Bitmap): Int {
-                    return value.rowBytes * value.height
-                }
-            }
-        }
-
-        override fun getBitmap(url: String): Bitmap? {
-            return mCache.get(url)
-        }
-
-        override fun putBitmap(url: String, bitmap: Bitmap) {
-            mCache.put(url, bitmap)
-        }
-
-    }
 
     class Photo(val width: Int, val height: Int, val url: String)
 
