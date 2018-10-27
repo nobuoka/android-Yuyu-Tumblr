@@ -3,10 +3,8 @@ package info.vividcode.android.app.yuyutumblr
 import com.android.volley.toolbox.ImageLoader
 
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.View
-import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import info.vividcode.android.app.yuyutumblr.ui.AndroidMainView
 import info.vividcode.android.app.yuyutumblr.ui.PostAdapter
@@ -45,16 +43,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-
         mainApplication.updatePosts()
-
-        // 更新ボタンは使えないようにしておく (特に意味はない)
-        val updateButton = findViewById<View>(R.id.update_posts_button) as Button
-        updateButton.setOnClickListener {
-            Log.d("click", "clicked")
-            mainApplication.updatePosts()
-        }
-        updateButton.isEnabled = false
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

@@ -5,12 +5,6 @@
     android:orientation="vertical"
 	tools:context=".MainActivity" >
 
-            <Button
-                android:id="@+id/update_posts_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/update_posts" />
-
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipe_refresh_layout"
         android:layout_width="match_parent"
