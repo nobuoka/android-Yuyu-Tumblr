@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 21
-    buildToolsVersion "21.0.1"
+    buildToolsVersion '27.0.3'
 
     defaultConfig {
         applicationId "info.vividcode.android.app.yuyutumblr"
@@ -12,7 +12,8 @@ android {
 
     buildTypes {
         release {
-            runProguard false
+            minifyEnabled false
+            useProguard false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
     }
