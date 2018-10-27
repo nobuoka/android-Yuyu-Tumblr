@@ -1,6 +1,1 @@
 include ':app'
-include ':modules:volley'
-
-/* Volley のプロジェクトに含まれている build.gradle は build tools のバージョンが古かったりするので
- * こちらで管理できるビルドスクリプトを使う。 */
-project(':modules:volley').buildFileName = "../../buildVolley.gradle"
