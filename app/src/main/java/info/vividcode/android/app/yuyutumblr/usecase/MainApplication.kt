@@ -1,6 +1,5 @@
 package info.vividcode.android.app.yuyutumblr.usecase
 
-import android.util.Log
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.ArrayList
@@ -43,18 +42,17 @@ class MainApplication(private val mainView: MainView, private val tumblrApi: Tum
                         }
                         mainView.addPosts(pp)
                     } catch (err: JSONException) {
-                        Log.d("res", "error", err)
+                        logger.error("res: error", err)
                     }
                 }
                 is TumblrApi.Result.Failure -> {
-                    Log.d("res", "error", result.exception)
+                    logger.error("res: error", result.exception)
                 }
             } as? Unit?
         }
     }
 
     companion object {
-
         /**
          * response":[
          * {
