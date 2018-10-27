@@ -4,9 +4,7 @@ import org.json.JSONException
 import org.json.JSONObject
 
 import com.android.volley.RequestQueue
-import com.android.volley.Response
 import com.android.volley.toolbox.ImageLoader
-import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 
 import android.os.Bundle
@@ -20,6 +18,7 @@ import android.widget.Button
 import info.vividcode.android.app.yuyutumblr.ui.AndroidMainView
 import info.vividcode.android.app.yuyutumblr.ui.PostAdapter
 import info.vividcode.android.app.yuyutumblr.ui.BitmapCache
+import info.vividcode.android.app.yuyutumblr.web.TumblrWebApi
 
 import java.util.ArrayList
 
@@ -33,11 +32,22 @@ class MainActivity : Activity() {
 
     private val mainView: MainView by lazy { createMainView() }
 
+    private val tumblrApi: TumblrApi by lazy { TumblrWebApi(requireNotNull(mRequestQueue)) }
+
     interface MainView {
         fun setRefreshEventListener(listener: () -> Unit)
         fun stopRefreshingIndicator()
         fun addPosts(posts: List<JSONObject>)
         fun getLatestPost(): JSONObject?
+    }
+
+    interface TumblrApi {
+        fun fetchPosts(lastTimestamp: Int?, callback: (Result<JSONObject>) -> Unit)
+
+        sealed class Result<T> {
+            class Success<T>(val responseContent: T) : Result<T>()
+            class Failure<T>(val exception: Exception) : Result<T>()
+        }
     }
 
     private fun createMainView(): MainView {
@@ -93,44 +103,40 @@ class MainActivity : Activity() {
         // 引っ張って更新時は何回もこのメソッドが呼ばれるので, 更新処理中は何もしない
         if (mUpdating) return
         mUpdating = true
-        // API キーは Tumblr のドキュメントにのってたやつ。 ほんとは各自取得する必要がある?
-        // http://www.tumblr.com/docs/en/api/v2#tagged-method
-        var uri = "http://api.tumblr.com/v2/tagged?tag=%E3%82%86%E3%82%86%E5%BC%8F" + "&api_key=fuiKNFp9vQFvjLNvx4sUwti4Yb5yGutBN4Xh10LXZhhRKjWlV4"
 
-        val post = mainView.getLatestPost()
-        if (post != null) {
+        val lastTimestamp = mainView.getLatestPost()?.let { post ->
             try {
-                val lastTimestamp = post.getInt("timestamp")
-                uri += "&before=$lastTimestamp"
+                post.getInt("timestamp")
             } catch (e: JSONException) {
                 // TODO Auto-generated catch block
                 e.printStackTrace()
+                null
             }
-
         }
 
-        // リクエスト生成
-        val req = JsonObjectRequest(uri, null, Response.Listener { response ->
+        tumblrApi.fetchPosts(lastTimestamp) { result ->
             mUpdating = false
             mainView.stopRefreshingIndicator()
-            try {
-                val posts = response.getJSONArray("response")
-                val pp = ArrayList<JSONObject>()
-                val length = posts.length()
-                for (i in 0 until length) {
-                    pp.add(posts.getJSONObject(i))
+
+            when (result) {
+                is MainActivity.TumblrApi.Result.Success -> {
+                    try {
+                        val posts = result.responseContent.getJSONArray("response")
+                        val pp = ArrayList<JSONObject>()
+                        val length = posts.length()
+                        for (i in 0 until length) {
+                            pp.add(posts.getJSONObject(i))
+                        }
+                        mainView.addPosts(pp)
+                    } catch (err: JSONException) {
+                        Log.d("res", "error", err)
+                    }
                 }
-                mainView.addPosts(pp)
-            } catch (err: JSONException) {
-                Log.d("res", "error", err)
-            }
-        }, Response.ErrorListener { error ->
-            mUpdating = false
-            mainView.stopRefreshingIndicator()
-            Log.d("res", "error", error)
-        })
-        // リクエストをキューに追加
-        mRequestQueue!!.add(req)
+                is MainActivity.TumblrApi.Result.Failure -> {
+                    Log.d("res", "error", result.exception)
+                }
+            } as? Unit?
+        }
     }
 
     companion object {
