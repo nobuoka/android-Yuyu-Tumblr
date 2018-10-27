@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "info.vividcode.android.app.yuyutumblr"
-        minSdkVersion 9
+        minSdkVersion 14
         targetSdkVersion 28
     }
 
