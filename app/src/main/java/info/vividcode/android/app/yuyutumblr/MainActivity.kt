@@ -9,16 +9,15 @@ import com.android.volley.toolbox.ImageLoader
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 
-import android.graphics.Color
 import android.os.Bundle
 import android.app.Activity
 import android.support.v4.widget.SwipeRefreshLayout
-import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.Menu
 import android.view.View
 import android.widget.Button
+import info.vividcode.android.app.yuyutumblr.ui.AndroidMainView
 import info.vividcode.android.app.yuyutumblr.ui.PostAdapter
 import info.vividcode.android.app.yuyutumblr.ui.BitmapCache
 
@@ -26,39 +25,38 @@ import java.util.ArrayList
 
 class MainActivity : Activity() {
 
-    private var mSwipeRefreshLayout: SwipeRefreshLayout? = null
     private var mRequestQueue: RequestQueue? = null
-    private var mImageLoader: ImageLoader? = null
-    private var mRecyclerView: RecyclerView? = null
-    private var mAdapter: PostAdapter? = null
-    private var mLayoutManager: RecyclerView.LayoutManager? = null
 
     private var mUpdating = false
 
     class Photo(val width: Int, val height: Int, val url: String)
+
+    private val mainView: MainView by lazy { createMainView() }
+
+    interface MainView {
+        fun setRefreshEventListener(listener: () -> Unit)
+        fun stopRefreshingIndicator()
+        fun addPosts(posts: List<JSONObject>)
+        fun getLatestPost(): JSONObject?
+    }
+
+    private fun createMainView(): MainView {
+        // スクロール限界までスクロールしてさらに引っ張ると続きを読み込む仕組み
+        val recyclerView = findViewById<View>(R.id.posts_view) as RecyclerView
+        val imageLoader = ImageLoader(mRequestQueue, BitmapCache())
+        val postAdapter = PostAdapter(imageLoader)
+
+        val swipeRefreshLayout = findViewById<View>(R.id.swipe_refresh_layout) as SwipeRefreshLayout
+
+        return AndroidMainView.create(this, recyclerView, swipeRefreshLayout, postAdapter)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         mRequestQueue = Volley.newRequestQueue(this)
-        val imageLoader = ImageLoader(mRequestQueue, BitmapCache())
-        mImageLoader = imageLoader
-
-        // スクロール限界までスクロールしてさらに引っ張ると続きを読み込む仕組み
-        mRecyclerView = findViewById<View>(R.id.posts_view) as RecyclerView
-
-        // use a linear layout manager
-        mLayoutManager = LinearLayoutManager(this)
-        mRecyclerView!!.layoutManager = mLayoutManager
-
-        // specify an adapter (see also next example)
-        mAdapter = PostAdapter(imageLoader)
-        mRecyclerView!!.adapter = mAdapter
-        mSwipeRefreshLayout = findViewById<View>(R.id.swipe_refresh_layout) as SwipeRefreshLayout
-
-        mSwipeRefreshLayout!!.setColorSchemeColors(Color.RED)
-        mSwipeRefreshLayout!!.setOnRefreshListener { updatePosts() }
+        mainView.setRefreshEventListener(::updatePosts)
     }
 
     override fun onRestart() {
@@ -99,7 +97,7 @@ class MainActivity : Activity() {
         // http://www.tumblr.com/docs/en/api/v2#tagged-method
         var uri = "http://api.tumblr.com/v2/tagged?tag=%E3%82%86%E3%82%86%E5%BC%8F" + "&api_key=fuiKNFp9vQFvjLNvx4sUwti4Yb5yGutBN4Xh10LXZhhRKjWlV4"
 
-        val post = mAdapter!!.lastItem
+        val post = mainView.getLatestPost()
         if (post != null) {
             try {
                 val lastTimestamp = post.getInt("timestamp")
@@ -114,7 +112,7 @@ class MainActivity : Activity() {
         // リクエスト生成
         val req = JsonObjectRequest(uri, null, Response.Listener { response ->
             mUpdating = false
-            mSwipeRefreshLayout!!.isRefreshing = false
+            mainView.stopRefreshingIndicator()
             try {
                 val posts = response.getJSONArray("response")
                 val pp = ArrayList<JSONObject>()
@@ -122,13 +120,13 @@ class MainActivity : Activity() {
                 for (i in 0 until length) {
                     pp.add(posts.getJSONObject(i))
                 }
-                mAdapter!!.add(pp)
+                mainView.addPosts(pp)
             } catch (err: JSONException) {
                 Log.d("res", "error", err)
             }
         }, Response.ErrorListener { error ->
             mUpdating = false
-            mSwipeRefreshLayout!!.isRefreshing = false
+            mainView.stopRefreshingIndicator()
             Log.d("res", "error", error)
         })
         // リクエストをキューに追加
