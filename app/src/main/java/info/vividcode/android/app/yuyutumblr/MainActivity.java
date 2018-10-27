@@ -258,6 +258,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onRestart() {
+        super.onRestart();
         mRequestQueue.start(); // start 時に呼び出さないのは onCreate で start されるため
     }
 
@@ -281,6 +282,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onStop() {
         mRequestQueue.stop();
+        super.onStop();
     }
 
     @Override
