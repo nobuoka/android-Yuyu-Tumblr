@@ -1,0 +1,16 @@
+apply plugin: 'java-library'
+apply plugin: 'kotlin'
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = '1.6'
+    }
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'org.slf4j:slf4j-api:1.7.25'
+
+    compileOnly 'org.json:json:20180813' // This is included in Android framework
+    testImplementation 'org.json:json:20180813'
+}

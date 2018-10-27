@@ -1,4 +1,4 @@
-apply plugin: 'com.android.application'
+apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
@@ -6,7 +6,6 @@ android {
     buildToolsVersion '28.0.3'
 
     defaultConfig {
-        applicationId "info.vividcode.android.app.yuyutumblr"
         minSdkVersion 14
         targetSdkVersion 28
     }
@@ -22,15 +21,7 @@ android {
 
 dependencies {
     implementation project(':modules:yuyu:usecase')
-    implementation project(':modules:yuyu:web')
-    implementation project(':modules:yuyu:ui')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'org.slf4j:slf4j-api:1.7.25'
-    implementation 'org.slf4j:slf4j-android:1.7.25'
-
-    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'androidx.cardview:cardview:1.0.0'
-    implementation 'androidx.recyclerview:recyclerview:1.0.0'
 
     implementation 'com.android.volley:volley:1.1.0'
 }

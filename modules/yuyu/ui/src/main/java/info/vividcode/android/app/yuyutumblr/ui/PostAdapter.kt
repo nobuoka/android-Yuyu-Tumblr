@@ -1,13 +1,12 @@
 package info.vividcode.android.app.yuyutumblr.ui
 
-import androidx.recyclerview.widget.RecyclerView
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.android.volley.toolbox.ImageLoader
 import com.android.volley.toolbox.NetworkImageView
-import info.vividcode.android.app.yuyutumblr.R
+import info.vividcode.android.app.yuyu.ui.R
 import info.vividcode.android.app.yuyutumblr.usecase.MainApplication
 import org.json.JSONException
 import org.json.JSONObject
