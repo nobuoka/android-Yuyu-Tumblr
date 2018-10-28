@@ -1,10 +1,14 @@
 package info.vividcode.android.app.yuyutumblr.ui
 
+import android.app.Activity
 import android.content.Context
 import android.graphics.Color
+import android.view.View
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.android.volley.RequestQueue
+import com.android.volley.toolbox.ImageLoader
+import info.vividcode.android.app.yuyu.ui.R
 import info.vividcode.android.app.yuyutumblr.usecase.MainView
 import org.json.JSONObject
 
@@ -17,13 +21,19 @@ class AndroidMainView private constructor(
     private var internalRefreshEventListener: (() -> Unit)? = null
 
     companion object {
-        fun create(
-                context: Context,
-                recyclerView: androidx.recyclerview.widget.RecyclerView,
-                swipeRefreshLayout: androidx.swiperefreshlayout.widget.SwipeRefreshLayout,
-                adapter: PostAdapter
-        ) = AndroidMainView(recyclerView, swipeRefreshLayout, adapter).also {
-            it.initialize(context)
+        fun setupActivity(activity: Activity, requestQueue: RequestQueue): MainView {
+            activity.setContentView(R.layout.activity_main)
+
+            // スクロール限界までスクロールしてさらに引っ張ると続きを読み込む仕組み
+            val recyclerView = activity.findViewById<View>(R.id.posts_view) as RecyclerView
+            val imageLoader = ImageLoader(requestQueue, BitmapCache())
+            val postAdapter = PostAdapter(imageLoader)
+
+            val swipeRefreshLayout = activity.findViewById<View>(R.id.swipe_refresh_layout) as SwipeRefreshLayout
+
+            return AndroidMainView(recyclerView, swipeRefreshLayout, postAdapter).also {
+                it.initialize(activity)
+            }
         }
     }
 
