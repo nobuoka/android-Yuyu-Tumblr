@@ -12,7 +12,7 @@ class TumblrWebApi(private val requestQueue: RequestQueue) : TumblrApi {
     override fun fetchPosts(lastTimestamp: Int?, callback: (TumblrApi.Result<JSONObject>) -> Unit) {
         // API キーは Tumblr のドキュメントにのってたやつ。 ほんとは各自取得する必要がある?
         // http://www.tumblr.com/docs/en/api/v2#tagged-method
-        var uri = "http://api.tumblr.com/v2/tagged?tag=%E3%82%86%E3%82%86%E5%BC%8F" + "&api_key=fuiKNFp9vQFvjLNvx4sUwti4Yb5yGutBN4Xh10LXZhhRKjWlV4"
+        var uri = "https://api.tumblr.com/v2/tagged?tag=%E3%82%86%E3%82%86%E5%BC%8F" + "&api_key=fuiKNFp9vQFvjLNvx4sUwti4Yb5yGutBN4Xh10LXZhhRKjWlV4"
         if (lastTimestamp != null) {
             try {
                 uri += "&before=$lastTimestamp"
