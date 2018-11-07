@@ -9,8 +9,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.ImageLoader
 import info.vividcode.android.app.yuyu.ui.R
+import info.vividcode.android.app.yuyutumblr.usecase.MainApplication
 import info.vividcode.android.app.yuyutumblr.usecase.MainView
-import org.json.JSONObject
 
 class AndroidMainView private constructor(
         private val recyclerView: androidx.recyclerview.widget.RecyclerView,
@@ -57,10 +57,8 @@ class AndroidMainView private constructor(
         swipeRefreshLayout.isRefreshing = false
     }
 
-    override fun addPosts(posts: List<JSONObject>) {
-        adapter.add(posts)
+    override fun bindMainApplication(mainApplication: MainApplication) {
+        adapter.bindPhotoTimeline(mainApplication.photoTimeline)
     }
-
-    override fun getLatestPost(): JSONObject? = adapter.lastItem
 
 }

@@ -8,8 +8,11 @@ class MainApplication(private val mainView: MainView, private val tumblrApi: Tum
 
     private var mUpdating = false
 
+    val photoTimeline = PhotoTimeline()
+
     fun init() {
         mainView.setRefreshEventListener(::updatePosts)
+        mainView.bindMainApplication(this)
     }
 
     fun updatePosts() {
@@ -17,7 +20,7 @@ class MainApplication(private val mainView: MainView, private val tumblrApi: Tum
         if (mUpdating) return
         mUpdating = true
 
-        val lastTimestamp = mainView.getLatestPost()?.let { post ->
+        val lastTimestamp = photoTimeline.lastItem?.let { post ->
             try {
                 post.getInt("timestamp")
             } catch (e: JSONException) {
@@ -40,7 +43,7 @@ class MainApplication(private val mainView: MainView, private val tumblrApi: Tum
                         for (i in 0 until length) {
                             pp.add(posts.getJSONObject(i))
                         }
-                        mainView.addPosts(pp)
+                        photoTimeline.addPhotos(pp)
                     } catch (err: JSONException) {
                         logger.error("res: error", err)
                     }

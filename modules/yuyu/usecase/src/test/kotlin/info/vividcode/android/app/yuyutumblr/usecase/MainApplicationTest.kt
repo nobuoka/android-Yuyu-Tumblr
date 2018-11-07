@@ -20,10 +20,12 @@ internal class MainApplicationTest {
         val mainApplication = MainApplication(mockMainView, mockTumblrApi)
 
         every { mockMainView.setRefreshEventListener(any()) } returns Unit
+        every { mockMainView.bindMainApplication(any()) } returns Unit
 
         mainApplication.init()
 
         verify(exactly = 1) { mockMainView.setRefreshEventListener(any()) }
+        verify(exactly = 1) { mockMainView.bindMainApplication(any()) }
     }
 
     @Nested
@@ -32,9 +34,7 @@ internal class MainApplicationTest {
         internal fun resultSuccess() {
             val mainApplication = MainApplication(mockMainView, mockTumblrApi)
 
-            every { mockMainView.getLatestPost() } returns null
             every { mockMainView.stopRefreshingIndicator() } returns Unit
-            every { mockMainView.addPosts(any()) } returns Unit
 
             val lambdaSlot = CapturingSlot<(TumblrApi.Result<JSONObject>) -> Unit>()
             every { mockTumblrApi.fetchPosts(any(), capture(lambdaSlot)) } answers {
@@ -45,9 +45,7 @@ internal class MainApplicationTest {
 
             mainApplication.updatePosts()
 
-            verify(exactly = 1) { mockMainView.getLatestPost() }
             verify(exactly = 1) { mockMainView.stopRefreshingIndicator() }
-            verify(exactly = 1) { mockMainView.addPosts(emptyList()) }
             verify(exactly = 1) { mockTumblrApi.fetchPosts(any(), any()) }
         }
 
@@ -55,7 +53,6 @@ internal class MainApplicationTest {
         internal fun resultFailure() {
             val mainApplication = MainApplication(mockMainView, mockTumblrApi)
 
-            every { mockMainView.getLatestPost() } returns null
             every { mockMainView.stopRefreshingIndicator() } returns Unit
 
             val lambdaSlot = CapturingSlot<(TumblrApi.Result<JSONObject>) -> Unit>()
@@ -65,7 +62,6 @@ internal class MainApplicationTest {
 
             mainApplication.updatePosts()
 
-            verify(exactly = 1) { mockMainView.getLatestPost() }
             verify(exactly = 1) { mockMainView.stopRefreshingIndicator() }
             verify(exactly = 1) { mockTumblrApi.fetchPosts(any(), any()) }
         }
