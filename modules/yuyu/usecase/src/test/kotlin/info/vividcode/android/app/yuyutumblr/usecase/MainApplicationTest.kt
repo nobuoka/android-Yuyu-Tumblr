@@ -8,19 +8,20 @@ import org.json.JSONObject
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import java.lang.RuntimeException
 
 internal class MainApplicationTest {
 
     private val mockMainView = mockk<MainView>()
     private val mockTumblrApi = mockk<TumblrApi>()
 
+    init {
+        every { mockMainView.setRefreshEventListener(any()) } returns Unit
+        every { mockMainView.bindMainApplication(any()) } returns Unit
+    }
+
     @Test
     internal fun init() {
         val mainApplication = MainApplication(mockMainView, mockTumblrApi)
-
-        every { mockMainView.setRefreshEventListener(any()) } returns Unit
-        every { mockMainView.bindMainApplication(any()) } returns Unit
 
         mainApplication.init()
 
@@ -33,6 +34,7 @@ internal class MainApplicationTest {
         @Test
         internal fun resultSuccess() {
             val mainApplication = MainApplication(mockMainView, mockTumblrApi)
+            mainApplication.init()
 
             every { mockMainView.stopRefreshingIndicator() } returns Unit
 
@@ -52,6 +54,7 @@ internal class MainApplicationTest {
         @Test
         internal fun resultFailure() {
             val mainApplication = MainApplication(mockMainView, mockTumblrApi)
+            mainApplication.init()
 
             every { mockMainView.stopRefreshingIndicator() } returns Unit
 

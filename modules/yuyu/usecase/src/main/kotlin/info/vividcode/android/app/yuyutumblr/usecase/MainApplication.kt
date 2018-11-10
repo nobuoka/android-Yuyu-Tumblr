@@ -2,57 +2,69 @@ package info.vividcode.android.app.yuyutumblr.usecase
 
 import org.json.JSONException
 import org.json.JSONObject
-import java.util.ArrayList
+import java.util.*
 
-class MainApplication(private val mainView: MainView, private val tumblrApi: TumblrApi) {
+class MainApplication(private val mainView: MainView, tumblrApi: TumblrApi) {
 
-    private var mUpdating = false
+    private val photoListInitialFetchRequester = PhotoListInitialFetchRequester(tumblrApi)
+    private var photoListNextPageFetchRequester: PhotoListNextPageFetchRequester? = null
+
+    private val photoListNextPageFetchRequesterFactory =
+            PhotoListNextPageFetchRequester.createFactory(tumblrApi)
 
     val photoTimeline = PhotoTimeline()
 
     fun init() {
         mainView.setRefreshEventListener(::updatePosts)
         mainView.bindMainApplication(this)
+
+        photoListInitialFetchRequester.responseObservable.connect { response ->
+            updateTimeline(response.result)
+        }
+    }
+
+    private fun replaceNextPageRequester(nextPageFetchRequester: PhotoListNextPageFetchRequester?) {
+        photoListNextPageFetchRequester?.responseObservable?.disconnectAll()
+        photoListNextPageFetchRequester = nextPageFetchRequester
+        photoListNextPageFetchRequester?.responseObservable?.connect { response ->
+            updateTimeline(response.result)
+        }
     }
 
     fun updatePosts() {
-        // 引っ張って更新時は何回もこのメソッドが呼ばれるので, 更新処理中は何もしない
-        if (mUpdating) return
-        mUpdating = true
-
-        val lastTimestamp = photoTimeline.lastItem?.let { post ->
-            try {
-                post.getInt("timestamp")
-            } catch (e: JSONException) {
-                // TODO Auto-generated catch block
-                e.printStackTrace()
-                null
+        photoListNextPageFetchRequester.let { requester ->
+            if (requester != null) {
+                requester()
+            } else {
+                photoListInitialFetchRequester()
             }
         }
+    }
 
-        tumblrApi.fetchPosts(lastTimestamp) { result ->
-            mUpdating = false
-            mainView.stopRefreshingIndicator()
+    private fun updateTimeline(result: TumblrApi.Result<JSONObject>) {
+        mainView.stopRefreshingIndicator()
 
-            when (result) {
-                is TumblrApi.Result.Success -> {
-                    try {
-                        val posts = result.responseContent.getJSONArray("response")
-                        val pp = ArrayList<JSONObject>()
-                        val length = posts.length()
-                        for (i in 0 until length) {
-                            pp.add(posts.getJSONObject(i))
-                        }
-                        photoTimeline.addPhotos(pp)
-                    } catch (err: JSONException) {
-                        logger.error("res: error", err)
+        when (result) {
+            is TumblrApi.Result.Success -> {
+                try {
+                    val posts = result.responseContent.getJSONArray("response")
+                    val pp = ArrayList<JSONObject>()
+                    val length = posts.length()
+                    for (i in 0 until length) {
+                        pp.add(posts.getJSONObject(i))
                     }
+                    photoTimeline.addPhotos(pp)
+                    replaceNextPageRequester(pp.lastOrNull()?.let {
+                        photoListNextPageFetchRequesterFactory(it.getInt("timestamp"))
+                    })
+                } catch (err: JSONException) {
+                    logger.error("res: error", err)
                 }
-                is TumblrApi.Result.Failure -> {
-                    logger.error("res: error", result.exception)
-                }
-            } as? Unit?
-        }
+            }
+            is TumblrApi.Result.Failure -> {
+                logger.error("res: error", result.exception)
+            }
+        } as? Unit?
     }
 
     companion object {
