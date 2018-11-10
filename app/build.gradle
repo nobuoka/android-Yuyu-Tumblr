@@ -6,7 +6,7 @@ android {
     buildToolsVersion '28.0.3'
 
     defaultConfig {
-        applicationId "info.vividcode.android.app.yuyutumblr"
+        applicationId "info.vividcode.yuyu.android"
         minSdkVersion 14
         targetSdkVersion 28
     }
