@@ -9,6 +9,13 @@ steps:
     workingDirectory: ''
     gradleWrapperFile: 'gradlew'
     gradleOptions: '-Xmx3072m'
-    publishJUnitResults: false
+    publishJUnitResults: true
     testResultsFiles: '**/TEST-*.xml'
     tasks: 'build'
+- task: Bash@3
+  inputs:
+    targetType: 'inline'
+    script: 'bash <(curl -s https://codecov.io/bash)'
+    workingDirectory: ''
+  env:
+    'CODECOV_TOKEN': '$(codecovToken)'

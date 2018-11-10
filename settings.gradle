@@ -1,1 +1,2 @@
 include ':app'
+include ':modules:yuyu:usecase', ':modules:yuyu:ui', ':modules:yuyu:web'
