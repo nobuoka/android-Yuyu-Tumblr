@@ -11,6 +11,18 @@ android {
         targetSdkVersion 28
     }
 
+    // See : https://developer.android.com/topic/google-play-instant/getting-started/instant-enabled-app-bundle
+    flavorDimensions "experience"
+    productFlavors {
+        instant {
+            versionCode 4
+        }
+        installed {
+            // Version code of installed version must greater than one of instant version.
+            versionCode 5
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
