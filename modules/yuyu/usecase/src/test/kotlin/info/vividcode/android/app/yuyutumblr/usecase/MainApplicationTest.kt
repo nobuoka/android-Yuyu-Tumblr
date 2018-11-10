@@ -8,19 +8,21 @@ import org.json.JSONObject
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import java.lang.RuntimeException
 
 internal class MainApplicationTest {
 
     private val mockMainView = mockk<MainView>()
     private val mockTumblrApi = mockk<TumblrApi>()
 
+    init {
+        every { mockMainView.setRefreshEventListener(any()) } returns Unit
+        every { mockMainView.bindMainApplication(any()) } returns Unit
+        every { mockMainView.stopRefreshingIndicator() } returns Unit
+    }
+
     @Test
     internal fun init() {
         val mainApplication = MainApplication(mockMainView, mockTumblrApi)
-
-        every { mockMainView.setRefreshEventListener(any()) } returns Unit
-        every { mockMainView.bindMainApplication(any()) } returns Unit
 
         mainApplication.init()
 
@@ -31,10 +33,9 @@ internal class MainApplicationTest {
     @Nested
     internal inner class UpdatePosts {
         @Test
-        internal fun resultSuccess() {
+        internal fun resultSuccess_noPhoto() {
             val mainApplication = MainApplication(mockMainView, mockTumblrApi)
-
-            every { mockMainView.stopRefreshingIndicator() } returns Unit
+            mainApplication.init()
 
             val lambdaSlot = CapturingSlot<(TumblrApi.Result<JSONObject>) -> Unit>()
             every { mockTumblrApi.fetchPosts(any(), capture(lambdaSlot)) } answers {
@@ -46,14 +47,57 @@ internal class MainApplicationTest {
             mainApplication.updatePosts()
 
             verify(exactly = 1) { mockMainView.stopRefreshingIndicator() }
-            verify(exactly = 1) { mockTumblrApi.fetchPosts(any(), any()) }
+            verify(exactly = 1) { mockTumblrApi.fetchPosts(isNull(), any()) }
+
+            // Second request also should fetch latest posts, because response of first request has no posts.
+            mainApplication.updatePosts()
+
+            verify(exactly = 2) { mockMainView.stopRefreshingIndicator() }
+            verify(exactly = 2) { mockTumblrApi.fetchPosts(isNull(), any()) }
+        }
+
+        @Test
+        internal fun resultSuccess_photoExists() {
+            val mainApplication = MainApplication(mockMainView, mockTumblrApi)
+            mainApplication.init()
+
+            val lambdaSlot = CapturingSlot<(TumblrApi.Result<JSONObject>) -> Unit>()
+            every { mockTumblrApi.fetchPosts(any(), capture(lambdaSlot)) } answers {
+                lambdaSlot.captured(TumblrApi.Result.Success(JSONObject(
+                        """{ "response": [
+                            |  {
+                            |    "timestamp": 1370531100,
+                            |    "photos": [
+                            |      {
+                            |        "caption": "",
+                            |        "alt_sizes": [
+                            |          {"width":400,"height":600,"url":"http://example.com/af8c96/tumblr_mnz8le_400.jpg"},
+                            |          {"width":250,"height":375,"url":"http://example.com/af8c96/tumblr_mnz8le_250.jpg"}
+                            |        ],
+                            |        "original_size": {"width":400,"height":600,"url":"http://example.com/af8c96/tumblr_mnz8le_400.jpg"}
+                            |      }
+                            |    ]
+                            |  }
+                            |] }""".trimMargin()
+                )))
+            }
+
+            mainApplication.updatePosts()
+
+            verify(exactly = 1) { mockMainView.stopRefreshingIndicator() }
+            verify(exactly = 1) { mockTumblrApi.fetchPosts(isNull(), any()) }
+
+            // Second request should fetch next page, because response of first request have a post.
+            mainApplication.updatePosts()
+
+            verify(exactly = 2) { mockMainView.stopRefreshingIndicator() }
+            verify(exactly = 1) { mockTumblrApi.fetchPosts(eq(1370531100), any()) }
         }
 
         @Test
         internal fun resultFailure() {
             val mainApplication = MainApplication(mockMainView, mockTumblrApi)
-
-            every { mockMainView.stopRefreshingIndicator() } returns Unit
+            mainApplication.init()
 
             val lambdaSlot = CapturingSlot<(TumblrApi.Result<JSONObject>) -> Unit>()
             every { mockTumblrApi.fetchPosts(any(), capture(lambdaSlot)) } answers {
@@ -63,7 +107,7 @@ internal class MainApplicationTest {
             mainApplication.updatePosts()
 
             verify(exactly = 1) { mockMainView.stopRefreshingIndicator() }
-            verify(exactly = 1) { mockTumblrApi.fetchPosts(any(), any()) }
+            verify(exactly = 1) { mockTumblrApi.fetchPosts(isNull(), any()) }
         }
     }
 
