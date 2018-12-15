@@ -43,6 +43,36 @@ internal class MainApplicationTest {
     }
 
     @Nested
+    internal inner class RequestInitialLoadIfNeededPosts {
+        @Test
+        internal fun request_whenPostsEmpty() {
+            mainApplication.activate()
+            setupMockTumblrApiFetchPostsResult(TumblrApi.Result.Success(emptyList()))
+
+            mainApplication.requestInitialLoadIfNeeded()
+
+            verify(exactly = 1) { mockMainView.stopRefreshingIndicator() }
+            verify(exactly = 1) { mockTumblrApi.fetchPosts(isNull(), any()) }
+        }
+
+        @Test
+        internal fun notRequest_whenPostsNotEmpty() {
+            mainApplication.activate()
+            mainApplication.photoTimeline.addPhotos(listOf(
+                    TumblrPost.Photo(100, listOf(TumblrPhotoInfo(listOf(
+                            Photo(width = 100, height = 100, url = "http://example.com/image-1.jpg")
+                    ))))
+            ))
+            setupMockTumblrApiFetchPostsResult(TumblrApi.Result.Success(emptyList()))
+
+            mainApplication.requestInitialLoadIfNeeded()
+
+            verify(exactly = 0) { mockMainView.stopRefreshingIndicator() }
+            verify(exactly = 0) { mockTumblrApi.fetchPosts(isNull(), any()) }
+        }
+    }
+
+    @Nested
     internal inner class UpdatePosts {
         @Test
         internal fun resultSuccess_noPhoto() {
@@ -136,6 +166,13 @@ internal class MainApplicationTest {
             val photo = MainApplication.getAppropriateSizePhotoObject(photoInfo)
 
             Assertions.assertNull(photo)
+        }
+    }
+
+    private fun setupMockTumblrApiFetchPostsResult(result: TumblrApi.Result<List<TumblrPost>>) {
+        val lambdaSlot = CapturingSlot<(TumblrApi.Result<List<TumblrPost>>) -> Unit>()
+        every { mockTumblrApi.fetchPosts(any(), capture(lambdaSlot)) } answers {
+            lambdaSlot.captured(result)
         }
     }
 
