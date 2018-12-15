@@ -105,43 +105,17 @@ internal class MainApplicationTest {
     @Nested
     internal inner class GetAppropriateSizePhotoObjectMethodTest {
         @Test
-        internal fun normal_smallSizes_targetSizePosition_top() {
-            val photoInfo = TumblrPhotoInfo(createTestPhotoListSmallSizesWithTargetSizeTop())
+        internal fun normal_similarSizes() {
+            val photoInfo = TumblrPhotoInfo(listOf(
+                    Photo(width = 399, height = 399, url = "http://example.com/af8c96/tumblr_mnz8le_399-2.jpg"),
+                    Photo(width = 401, height = 400, url = "http://example.com/af8c96/tumblr_mnz8le_401-1.jpg"),
+                    Photo(width = 399, height = 399, url = "http://example.com/af8c96/tumblr_mnz8le_399-1.jpg"),
+                    Photo(width = 401, height = 401, url = "http://example.com/af8c96/tumblr_mnz8le_401-2.jpg")
+            ))
+            val expected = Photo(width = 399, height = 399, url = "http://example.com/af8c96/tumblr_mnz8le_399-1.jpg")
 
             val photo = MainApplication.getAppropriateSizePhotoObject(photoInfo)
 
-            val expected = Photo(400, 600, "http://example.com/af8c96/tumblr_mnz8le_400.jpg")
-            Assertions.assertEquals(expected, photo)
-        }
-
-        @Test
-        internal fun normal_smallSizes_targetSizePosition_middle() {
-            val photoInfo = TumblrPhotoInfo(createTestPhotoListSmallSizesWithTargetSizeMiddle())
-
-            val photo = MainApplication.getAppropriateSizePhotoObject(photoInfo)
-
-            val expected = Photo(400, 600, "http://example.com/af8c96/tumblr_mnz8le_400.jpg")
-            Assertions.assertEquals(expected, photo)
-        }
-
-        @Test
-        internal fun normal_largeSizes_targetSizePosition_top() {
-            val photoInfo = TumblrPhotoInfo(createTestPhotoListLargeSizesWithTargetSizeTop())
-
-            val photo = MainApplication.getAppropriateSizePhotoObject(photoInfo)
-
-            val expected = Photo(400, 600, "http://example.com/af8c96/tumblr_mnz8le_400.jpg")
-            Assertions.assertEquals(expected, photo)
-        }
-
-        @Test
-        internal fun normal_largeSizes_targetSizePosition_middle() {
-            val photoInfo = TumblrPhotoInfo(createTestPhotoListLargeSizesWithTargetSizeMiddle())
-
-            val photo = MainApplication.getAppropriateSizePhotoObject(photoInfo)
-
-            // Bug
-            val expected = Photo(width = 500, height = 750, url = "http://example.com/af8c96/tumblr_mnz8le_500.jpg")
             Assertions.assertEquals(expected, photo)
         }
 
@@ -153,40 +127,6 @@ internal class MainApplicationTest {
 
             Assertions.assertNull(photo)
         }
-    }
-
-    companion object {
-        fun createTestPhotoListSmallSizesWithTargetSizeTop(): List<Photo> = listOf(
-                // Target size
-                Photo(width = 400, height = 600, url = "http://example.com/af8c96/tumblr_mnz8le_400.jpg"),
-                Photo(width = 250, height = 375, url = "http://example.com/af8c96/tumblr_mnz8le_250.jpg"),
-                Photo(width = 100, height = 150, url = "http://example.com/af8c96/tumblr_mnz8le_100.jpg"),
-                Photo(width = 75, height =75, url = "http://example.com/af8c96/tumblr_mnz8le_75.jpg")
-        )
-
-        fun createTestPhotoListSmallSizesWithTargetSizeMiddle(): List<Photo> = listOf(
-                Photo(width = 250, height = 375, url = "http://example.com/af8c96/tumblr_mnz8le_250.jpg"),
-                Photo(width = 100, height = 150, url = "http://example.com/af8c96/tumblr_mnz8le_100.jpg"),
-                // Target size
-                Photo(width = 400, height = 600, url = "http://example.com/af8c96/tumblr_mnz8le_400.jpg"),
-                Photo(width = 75, height =75, url = "http://example.com/af8c96/tumblr_mnz8le_75.jpg")
-        )
-
-        fun createTestPhotoListLargeSizesWithTargetSizeTop(): List<Photo> = listOf(
-                // Target size
-                Photo(width = 400, height = 600, url = "http://example.com/af8c96/tumblr_mnz8le_400.jpg"),
-                Photo(width = 600, height = 900, url = "http://example.com/af8c96/tumblr_mnz8le_600.jpg"),
-                Photo(width = 500, height = 750, url = "http://example.com/af8c96/tumblr_mnz8le_500.jpg"),
-                Photo(width = 700, height = 1050, url = "http://example.com/af8c96/tumblr_mnz8le_700.jpg")
-        )
-
-        fun createTestPhotoListLargeSizesWithTargetSizeMiddle(): List<Photo> = listOf(
-                Photo(width = 600, height = 900, url = "http://example.com/af8c96/tumblr_mnz8le_600.jpg"),
-                Photo(width = 500, height = 750, url = "http://example.com/af8c96/tumblr_mnz8le_500.jpg"),
-                // Target size
-                Photo(width = 400, height = 600, url = "http://example.com/af8c96/tumblr_mnz8le_400.jpg"),
-                Photo(width = 700, height = 1050, url = "http://example.com/af8c96/tumblr_mnz8le_700.jpg")
-        )
     }
 
 }

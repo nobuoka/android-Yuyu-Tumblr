@@ -55,27 +55,18 @@ class MainApplication(private val mainView: MainView, tumblrApi: TumblrApi) {
     }
 
     companion object {
-        fun getAppropriateSizePhotoObject(photoInfo: TumblrPhotoInfo): Photo? {
-            var photo: Photo? = null
-            val arr = photoInfo.altSizes
-            for (p in arr) {
-                if (photo == null) {
-                    photo = p
-                } else {
-                    if (p.width <= 400) {
-                        if (photo.width < p.width) {
-                            photo = p
-                        }
-                    } else {
-                        if (p.width < photo.width) {
-                            photo = p
-                        }
-                    }
-                }
-            }
+        private const val DESIRED_IMAGE_WIDTH = 400
 
-            return photo
-        }
+        /**
+         * Select a photo of which width is most closest to [DESIRED_IMAGE_WIDTH].
+         */
+        fun getAppropriateSizePhotoObject(photoInfo: TumblrPhotoInfo): Photo? =
+                photoInfo.altSizes.sortedWith(
+                        compareBy<Photo> { value -> Math.abs(DESIRED_IMAGE_WIDTH - value.width) }
+                                .then(compareBy { value -> value.width })
+                                .then(compareBy { value -> value.height })
+                                .then(compareBy { value -> value.url })
+                ).firstOrNull()
     }
 
 }
