@@ -4,7 +4,6 @@ import io.mockk.CapturingSlot
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import org.json.JSONObject
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -61,21 +60,17 @@ internal class MainApplicationTest {
 
             val lambdaSlot = CapturingSlot<(TumblrApi.Result<List<TumblrPost>>) -> Unit>()
             every { mockTumblrApi.fetchPosts(any(), capture(lambdaSlot)) } answers {
-                lambdaSlot.captured(TumblrApi.Result.Success(listOf(TumblrPost(JSONObject(
-                        """{
-                            |  "timestamp": 1370531100,
-                            |  "photos": [
-                            |    {
-                            |      "caption": "",
-                            |      "alt_sizes": [
-                            |        {"width":400,"height":600,"url":"http://example.com/af8c96/tumblr_mnz8le_400.jpg"},
-                            |        {"width":250,"height":375,"url":"http://example.com/af8c96/tumblr_mnz8le_250.jpg"}
-                            |      ],
-                            |      "original_size": {"width":400,"height":600,"url":"http://example.com/af8c96/tumblr_mnz8le_400.jpg"}
-                            |    }
-                            |  ]
-                            |}""".trimMargin()
-                )))))
+                lambdaSlot.captured(TumblrApi.Result.Success(listOf(
+                        TumblrPost.Photo(
+                                timestamp = 1370531100,
+                                photos = listOf(
+                                        TumblrPhotoInfo(listOf(
+                                                Photo(width = 400, height = 600, url = "http://example.com/af8c96/tumblr_mnz8le_400.jpg"),
+                                                Photo(width = 250, height = 375, url = "http://example.com/af8c96/tumblr_mnz8le_250.jpg")
+                                        ))
+                                )
+                        )
+                )))
             }
 
             mainApplication.updatePosts()
@@ -131,7 +126,7 @@ internal class MainApplicationTest {
 
         @Test
         internal fun invalidJson() {
-            val photoInfo = TumblrPhotoInfo(JSONObject("{}"))
+            val photoInfo = TumblrPhotoInfo(emptyList())
 
             val photo = MainApplication.getAppropriateSizePhotoObject(photoInfo)
 
@@ -140,31 +135,19 @@ internal class MainApplicationTest {
     }
 
     companion object {
-        fun createTestPhotoJsonWithTargetSizeTop() = JSONObject("""
-            {
-              "caption": "",
-              "alt_sizes": [
-                {"width":400,"height":600,"url":"http://example.com/af8c96/tumblr_mnz8le_400.jpg"},
-                {"width":250,"height":375,"url":"http://example.com/af8c96/tumblr_mnz8le_250.jpg"},
-                {"width":100,"height":150,"url":"http://example.com/af8c96/tumblr_mnz8le_100.jpg"},
-                {"width":75,"height":75,"url":"http://example.com/af8c96/tumblr_mnz8le_75.jpg"}
-              ],
-              "original_size": {"width":400,"height":600,"url":"http://example.com/af8c96/tumblr_mnz8le_400.jpg"}
-            }
-        """.trimIndent())
+        fun createTestPhotoJsonWithTargetSizeTop(): List<Photo> = listOf(
+                Photo(width = 400, height = 600, url = "http://example.com/af8c96/tumblr_mnz8le_400.jpg"),
+                Photo(width = 250, height = 375, url = "http://example.com/af8c96/tumblr_mnz8le_250.jpg"),
+                Photo(width = 100, height = 150, url = "http://example.com/af8c96/tumblr_mnz8le_100.jpg"),
+                Photo(width = 75, height =75, url = "http://example.com/af8c96/tumblr_mnz8le_75.jpg")
+        )
 
-        fun createTestPhotoJsonWithTargetSizeMiddle() = JSONObject("""
-            {
-              "caption": "",
-              "alt_sizes": [
-                {"width":250,"height":375,"url":"http://example.com/af8c96/tumblr_mnz8le_250.jpg"},
-                {"width":100,"height":150,"url":"http://example.com/af8c96/tumblr_mnz8le_100.jpg"},
-                {"width":400,"height":600,"url":"http://example.com/af8c96/tumblr_mnz8le_400.jpg"},
-                {"width":75,"height":75,"url":"http://example.com/af8c96/tumblr_mnz8le_75.jpg"}
-              ],
-              "original_size": {"width":400,"height":600,"url":"http://example.com/af8c96/tumblr_mnz8le_400.jpg"}
-            }
-        """.trimIndent())
+        fun createTestPhotoJsonWithTargetSizeMiddle(): List<Photo> = listOf(
+                Photo(width = 250, height = 375, url = "http://example.com/af8c96/tumblr_mnz8le_250.jpg"),
+                Photo(width = 100, height = 150, url = "http://example.com/af8c96/tumblr_mnz8le_100.jpg"),
+                Photo(width = 400, height = 600, url = "http://example.com/af8c96/tumblr_mnz8le_400.jpg"),
+                Photo(width = 75, height =75, url = "http://example.com/af8c96/tumblr_mnz8le_75.jpg")
+        )
     }
 
 }

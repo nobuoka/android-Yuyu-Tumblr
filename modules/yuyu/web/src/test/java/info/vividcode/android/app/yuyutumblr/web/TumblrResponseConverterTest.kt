@@ -3,6 +3,7 @@ package info.vividcode.android.app.yuyutumblr.web
 import info.vividcode.android.app.yuyutumblr.usecase.Photo
 import info.vividcode.android.app.yuyutumblr.usecase.TumblrPost
 import org.hamcrest.CoreMatchers.equalTo
+import org.hamcrest.CoreMatchers.instanceOf
 import org.hamcrest.MatcherAssert.assertThat
 import org.json.JSONObject
 import org.junit.Test
@@ -33,10 +34,10 @@ internal class TumblrResponseConverterTest {
         assertThat(tumblrPosts.size, equalTo(1))
 
         val post = tumblrPosts[0]
+        assertThat(post, instanceOf(TumblrPost.Photo::class.java))
         assertThat(post.timestamp, equalTo(1370531100))
-        assertThat(post.type, equalTo("photo"))
 
-        val photos = post.photos
+        val photos = (post as TumblrPost.Photo).photos
         assertThat(photos.size, equalTo(1))
 
         val photoAltSizes = photos[0].altSizes

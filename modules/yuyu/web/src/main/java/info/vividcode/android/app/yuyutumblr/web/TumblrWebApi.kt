@@ -24,8 +24,12 @@ class TumblrWebApi(private val requestQueue: RequestQueue) : TumblrApi {
 
         // リクエスト生成
         val req = JsonObjectRequest(uri, null, Response.Listener { response ->
-            val responseContent = TumblrResponseConverter.convertTumblrPostsResponse(response)
-            callback(TumblrApi.Result.Success(responseContent))
+            val responseContent = try {
+                TumblrApi.Result.Success(TumblrResponseConverter.convertTumblrPostsResponse(response))
+            } catch (e: Throwable) {
+                TumblrApi.Result.Failure<List<TumblrPost>>(e)
+            }
+            callback(responseContent)
         }, Response.ErrorListener { error ->
             callback(TumblrApi.Result.Failure(error))
         })

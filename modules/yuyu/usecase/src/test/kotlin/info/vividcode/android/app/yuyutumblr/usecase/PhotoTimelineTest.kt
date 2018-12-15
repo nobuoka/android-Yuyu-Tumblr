@@ -30,11 +30,10 @@ internal class PhotoTimelineTest {
         internal fun addPhotos() {
             val photoTimeline = PhotoTimeline()
 
-            val photo1 = TumblrPost(MainApplicationTest.createTestPhotoJsonWithTargetSizeTop())
-            photoTimeline.addPhotos(listOf(
-                    TumblrPost(MainApplicationTest.createTestPhotoJsonWithTargetSizeMiddle()),
-                    photo1
-            ))
+            val photo1 = TumblrPost.Photo(100, listOf(TumblrPhotoInfo(listOf(Photo(200, 200, "http://example.com/image-1.jpg")))))
+            val photo2 = TumblrPost.Photo(100, listOf(TumblrPhotoInfo(listOf(Photo(200, 200, "http://example.com/image-2.jpg")))))
+
+            photoTimeline.addPhotos(listOf(photo2, photo1))
 
             Assertions.assertEquals(2, photoTimeline.size)
             Assertions.assertSame(photo1, photoTimeline.lastItem)
@@ -55,12 +54,9 @@ internal class PhotoTimelineTest {
         @Test
         internal fun getPhoto() {
             val photoTimeline = PhotoTimeline()
-
-            val photo1 = TumblrPost(MainApplicationTest.createTestPhotoJsonWithTargetSizeTop())
-            photoTimeline.addPhotos(listOf(
-                    TumblrPost(MainApplicationTest.createTestPhotoJsonWithTargetSizeMiddle()),
-                    photo1
-            ))
+            val photo1 = TumblrPost.Photo(100, listOf(TumblrPhotoInfo(listOf(Photo(200, 200, "http://example.com/image-1.jpg")))))
+            val photo2 = TumblrPost.Photo(100, listOf(TumblrPhotoInfo(listOf(Photo(200, 200, "http://example.com/image-2.jpg")))))
+            photoTimeline.addPhotos(listOf(photo2, photo1))
 
             // Act
             val photo = photoTimeline.getPhoto(1)
@@ -84,14 +80,13 @@ internal class PhotoTimelineTest {
             }
             photoTimeline.addChangeEventListener(eventListener)
 
+            val photo1 = TumblrPost.Photo(100, listOf(TumblrPhotoInfo(listOf(Photo(200, 200, "http://example.com/image-1.jpg")))))
+            val photo2 = TumblrPost.Photo(100, listOf(TumblrPhotoInfo(listOf(Photo(200, 200, "http://example.com/image-2.jpg")))))
+            val photo3 = TumblrPost.Photo(100, listOf(TumblrPhotoInfo(listOf(Photo(200, 200, "http://example.com/image-3.jpg")))))
+
             photoTimeline.addPhotos(emptyList())
-            photoTimeline.addPhotos(listOf(
-                    MainApplicationTest.createTestPhotoJsonWithTargetSizeMiddle()
-            ).map(::TumblrPost))
-            photoTimeline.addPhotos(listOf(
-                    MainApplicationTest.createTestPhotoJsonWithTargetSizeMiddle(),
-                    MainApplicationTest.createTestPhotoJsonWithTargetSizeTop()
-            ).map(::TumblrPost))
+            photoTimeline.addPhotos(listOf(photo1))
+            photoTimeline.addPhotos(listOf(photo2, photo3))
 
             Assertions.assertEquals(
                     listOf(
