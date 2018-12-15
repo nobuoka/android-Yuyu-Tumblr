@@ -7,10 +7,17 @@ import info.vividcode.android.app.yuyutumblr.ui.AndroidMainView
 import info.vividcode.android.app.yuyutumblr.usecase.MainApplication
 import info.vividcode.android.app.yuyutumblr.utils.RequestQueueLifecycleAwareContainer
 import info.vividcode.android.app.yuyutumblr.web.TumblrWebApi
+import okhttp3.OkHttpClient
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var mainApplication: MainApplication
+
+    private val callbackExecutor: TumblrWebApi.CallbackExecutor = object : TumblrWebApi.CallbackExecutor {
+        override fun <T> execute(value: T, execution: (T) -> Unit) {
+            runOnUiThread { execution(value) }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -20,7 +27,7 @@ class MainActivity : AppCompatActivity() {
 
         val requestQueue = requestQueueContainer.requestQueue
         val mainView = AndroidMainView.setupActivity(this, requestQueue)
-        val tumblrApi = TumblrWebApi(requestQueue)
+        val tumblrApi = TumblrWebApi(OkHttpClient.Builder().build(), callbackExecutor)
 
         mainApplication = MainApplication(mainView, tumblrApi)
         mainApplication.init()
