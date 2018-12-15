@@ -140,8 +140,7 @@ internal class MainApplicationTest {
 
             val photo = MainApplication.getAppropriateSizePhotoObject(photoInfo)
 
-            // Bug
-            val expected = Photo(width = 500, height = 750, url = "http://example.com/af8c96/tumblr_mnz8le_500.jpg")
+            val expected = Photo(400, 600, "http://example.com/af8c96/tumblr_mnz8le_400.jpg")
             Assertions.assertEquals(expected, photo)
         }
 
