@@ -1,6 +1,5 @@
 package info.vividcode.android.app.yuyutumblr.ui
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,7 +9,7 @@ import com.android.volley.toolbox.NetworkImageView
 import info.vividcode.android.app.yuyu.ui.R
 import info.vividcode.android.app.yuyutumblr.usecase.MainApplication
 import info.vividcode.android.app.yuyutumblr.usecase.PhotoTimeline
-import org.json.JSONException
+import info.vividcode.android.app.yuyutumblr.usecase.TumblrPost
 
 class PostAdapter(
         private val mImageLoader: ImageLoader
@@ -44,30 +43,25 @@ class PostAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
-        try {
-            val post = photoTimeline?.getPhoto(position) ?: return
-            if (post.getString("type") == "photo") {
-                val p = MainApplication.getAppropriateSizePhotoObject(post.getJSONArray("photos").getJSONObject(0))
-                //String url = .getJSONObject("original_size").getString("url");
+        val post = photoTimeline?.getPhoto(position) ?: return
+        if (post is TumblrPost.Photo) {
+            val p = MainApplication.getAppropriateSizePhotoObject(post.photos.first())
+            //String url = .getJSONObject("original_size").getString("url");
 
-                val v = holder.itemView.findViewById<View>(R.id.image) as NetworkImageView
-                v.setImageUrl(p!!.url, mImageLoader)
-                v.minimumHeight = p.height
-                v.minimumWidth = 36
-                v.maxHeight = p.height
-                v.maxWidth = p.width
+            val v = holder.itemView.findViewById<View>(R.id.image) as NetworkImageView
+            v.setImageUrl(p!!.url, mImageLoader)
+            v.minimumHeight = p.height
+            v.minimumWidth = 36
+            v.maxHeight = p.height
+            v.maxWidth = p.width
 
-                v.setDefaultImageResId(android.R.drawable.ic_menu_rotate)
-                v.setErrorImageResId(android.R.drawable.ic_delete)
+            v.setDefaultImageResId(android.R.drawable.ic_menu_rotate)
+            v.setErrorImageResId(android.R.drawable.ic_delete)
 
-                //FrameLayout fl = (FrameLayout) convertView.findViewById(R.id.image_container);
-                //fl.removeAllViews();
-                //fl.addView(v);
-            }
-        } catch (e: JSONException) {
-            Log.d("error", "error", e)
+            //FrameLayout fl = (FrameLayout) convertView.findViewById(R.id.image_container);
+            //fl.removeAllViews();
+            //fl.addView(v);
         }
-
     }
 
     // Return the size of your dataset (invoked by the layout manager)
