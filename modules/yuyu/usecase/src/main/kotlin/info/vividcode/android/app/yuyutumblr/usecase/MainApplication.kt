@@ -1,38 +1,72 @@
 package info.vividcode.android.app.yuyutumblr.usecase
 
-class MainApplication(private val mainView: MainView, tumblrApi: TumblrApi) {
+import info.vividcode.android.app.yuyu.utils.Observer
 
-    private val photoListInitialFetchRequester = PhotoListInitialFetchRequester(tumblrApi)
-    private var photoListNextPageFetchRequester: PhotoListNextPageFetchRequester? = null
+class MainApplication(
+        private val mainView: MainView,
+        private val retainLifecycleScope: RetainLifecycleScope
+) {
 
-    private val photoListNextPageFetchRequesterFactory =
-            PhotoListNextPageFetchRequester.createFactory(tumblrApi)
+    class RetainLifecycleScope(
+            tumblrApi: TumblrApi
+    ) {
+        val photoListInitialFetchRequester = PhotoListInitialFetchRequester(tumblrApi)
+        var photoListNextPageFetchRequester: PhotoListNextPageFetchRequester? = null
 
-    val photoTimeline = PhotoTimeline()
+        val photoListNextPageFetchRequesterFactory = PhotoListNextPageFetchRequester.createFactory(tumblrApi)
 
-    fun init() {
-        mainView.setRefreshEventListener(::updatePosts)
-        mainView.bindMainApplication(this)
+        val photoTimeline: PhotoTimeline = PhotoTimeline()
 
-        photoListInitialFetchRequester.responseObservable.connect { response ->
-            updateTimeline(response.result)
+        fun replaceNextPageRequester(
+                nextPageFetchRequester: PhotoListNextPageFetchRequester?,
+                observer: Observer<PhotoListNextPageFetchRequester.Response>
+        ) {
+            photoListNextPageFetchRequester?.responseObservable?.unsetObserver()
+            photoListNextPageFetchRequester = nextPageFetchRequester
+            photoListNextPageFetchRequester?.responseObservable?.setObserver(observer)
         }
     }
 
-    private fun replaceNextPageRequester(nextPageFetchRequester: PhotoListNextPageFetchRequester?) {
-        photoListNextPageFetchRequester?.responseObservable?.disconnectAll()
-        photoListNextPageFetchRequester = nextPageFetchRequester
-        photoListNextPageFetchRequester?.responseObservable?.connect { response ->
+    val photoTimeline get() = retainLifecycleScope.photoTimeline
+
+    private val nextPageFetchRequesterObserver: Observer<PhotoListNextPageFetchRequester.Response> =
+            { response -> updateTimeline(response.result) }
+
+    fun activate() {
+        mainView.setRefreshEventListener(::updatePosts)
+        mainView.bindMainApplication(this)
+
+        retainLifecycleScope.photoListInitialFetchRequester.responseObservable.setObserver { response ->
             updateTimeline(response.result)
+        }
+        retainLifecycleScope.photoListNextPageFetchRequester?.
+                responseObservable?.setObserver(nextPageFetchRequesterObserver)
+    }
+
+    fun deactivate() {
+        retainLifecycleScope.photoListInitialFetchRequester.responseObservable.unsetObserver()
+        retainLifecycleScope.photoListNextPageFetchRequester?.responseObservable?.unsetObserver()
+
+        mainView.unbindMainApplication()
+        mainView.unsetRefreshEventListener()
+    }
+
+    private fun replaceNextPageRequester(nextPageFetchRequester: PhotoListNextPageFetchRequester?) {
+        retainLifecycleScope.replaceNextPageRequester(nextPageFetchRequester, nextPageFetchRequesterObserver)
+    }
+
+    fun requestInitialLoadIfNeeded() {
+        if (photoTimeline.size == 0) {
+            updatePosts()
         }
     }
 
     fun updatePosts() {
-        photoListNextPageFetchRequester.let { requester ->
+        retainLifecycleScope.photoListNextPageFetchRequester.let { requester ->
             if (requester != null) {
                 requester()
             } else {
-                photoListInitialFetchRequester()
+                retainLifecycleScope.photoListInitialFetchRequester()
             }
         }
     }
@@ -43,9 +77,9 @@ class MainApplication(private val mainView: MainView, tumblrApi: TumblrApi) {
         when (result) {
             is TumblrApi.Result.Success -> {
                 val posts = result.responseContent
-                photoTimeline.addPhotos(posts)
+                retainLifecycleScope.photoTimeline.addPhotos(posts)
                 replaceNextPageRequester(posts.lastOrNull()?.let {
-                    photoListNextPageFetchRequesterFactory(it.timestamp)
+                    retainLifecycleScope.photoListNextPageFetchRequesterFactory(it.timestamp)
                 })
             }
             is TumblrApi.Result.Failure -> {

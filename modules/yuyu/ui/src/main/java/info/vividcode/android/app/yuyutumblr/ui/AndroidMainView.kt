@@ -53,12 +53,20 @@ class AndroidMainView private constructor(
         internalRefreshEventListener = listener
     }
 
+    override fun unsetRefreshEventListener() {
+        internalRefreshEventListener = null
+    }
+
     override fun stopRefreshingIndicator() {
         swipeRefreshLayout.isRefreshing = false
     }
 
     override fun bindMainApplication(mainApplication: MainApplication) {
         adapter.bindPhotoTimeline(mainApplication.photoTimeline)
+    }
+
+    override fun unbindMainApplication() {
+        adapter.unbindPhotoTimeline()
     }
 
 }

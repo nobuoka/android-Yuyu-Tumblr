@@ -17,6 +17,14 @@ class PostAdapter(
 
     private var photoTimeline: PhotoTimeline? = null
 
+    private val photoTimelineEventListener: (PhotoTimeline.ChangeEvent) -> Unit = {
+        when (it) {
+            is PhotoTimeline.ChangeEvent.ItemsAdded -> {
+                this.notifyItemRangeInserted(it.startPosition, it.itemCount)
+            }
+        } as? Unit?
+    }
+
     // Provide a reference to the views for each data item
     // Complex data items may need more than one view per item, and
     // you provide access to all the views for a data item in a view holder
@@ -24,13 +32,12 @@ class PostAdapter(
 
     fun bindPhotoTimeline(photoTimeline: PhotoTimeline) {
         this.photoTimeline = photoTimeline
-        photoTimeline.addChangeEventListener {
-            when (it) {
-                is PhotoTimeline.ChangeEvent.ItemsAdded -> {
-                    this.notifyItemRangeInserted(it.startPosition, it.itemCount)
-                }
-            } as? Unit?
-        }
+        photoTimeline.addChangeEventListener(photoTimelineEventListener)
+    }
+
+    fun unbindPhotoTimeline() {
+        photoTimeline?.removeChangeEventListener(photoTimelineEventListener)
+        this.photoTimeline = null
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostAdapter.ViewHolder {

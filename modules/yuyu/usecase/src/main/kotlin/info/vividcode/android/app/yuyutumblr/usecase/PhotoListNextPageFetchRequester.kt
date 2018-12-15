@@ -1,6 +1,6 @@
 package info.vividcode.android.app.yuyutumblr.usecase
 
-import info.vividcode.android.app.yuyu.utils.Observable
+import info.vividcode.android.app.yuyu.utils.BufferedObservable
 import info.vividcode.android.app.yuyu.utils.Subject
 
 interface PhotoListNextPageFetchRequester {
@@ -15,7 +15,7 @@ interface PhotoListNextPageFetchRequester {
 
     val state: State
 
-    val responseObservable: Observable<Response>
+    val responseObservable: BufferedObservable<Response>
 
     companion object {
         fun createFactory(tumblrApi: TumblrApi): (lastTimestamp: Int) -> PhotoListNextPageFetchRequester =
