@@ -3,6 +3,7 @@ package info.vividcode.android.app.yuyutumblr.usecase
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import javax.swing.event.ChangeEvent
 
 internal class PhotoTimelineTest {
 
@@ -67,17 +68,51 @@ internal class PhotoTimelineTest {
 
     @Nested
     internal inner class EventListenerTest {
+        private val eventListener = object : (PhotoTimeline.ChangeEvent) -> Unit {
+            val receivedEvents = mutableListOf<PhotoTimeline.ChangeEvent>()
+
+            override fun invoke(event: PhotoTimeline.ChangeEvent) {
+                receivedEvents.add(event)
+            }
+        }
+
+        @Test
+        internal fun setAndUnsetListener_addedListenerReceivesEvents() {
+            val photoTimeline = PhotoTimeline()
+
+            // Act
+            photoTimeline.addChangeEventListener(eventListener)
+            val photo1 = TumblrPost.Photo(100, listOf(TumblrPhotoInfo(listOf(Photo(200, 200, "http://example.com/image-1.jpg")))))
+            photoTimeline.addPhotos(listOf(photo1))
+
+            // Assert
+            Assertions.assertEquals(
+                    listOf(PhotoTimeline.ChangeEvent.ItemsAdded(0, 1)),
+                    eventListener.receivedEvents
+            )
+        }
+
+        @Test
+        internal fun setAndUnsetListener_removedListenerReceivesEvents() {
+            val photoTimeline = PhotoTimeline()
+
+            // Act
+            photoTimeline.addChangeEventListener(eventListener)
+            photoTimeline.removeChangeEventListener(eventListener)
+            val photo1 = TumblrPost.Photo(100, listOf(TumblrPhotoInfo(listOf(Photo(200, 200, "http://example.com/image-1.jpg")))))
+            photoTimeline.addPhotos(listOf(photo1))
+
+            // Assert
+            Assertions.assertEquals(
+                    emptyList<ChangeEvent>(),
+                    eventListener.receivedEvents
+            )
+        }
+
         @Test
         internal fun getFromEmpty() {
             val photoTimeline = PhotoTimeline()
 
-            val eventListener = object : (PhotoTimeline.ChangeEvent) -> Unit {
-                val receivedEvents = mutableListOf<PhotoTimeline.ChangeEvent>()
-
-                override fun invoke(event: PhotoTimeline.ChangeEvent) {
-                    receivedEvents.add(event)
-                }
-            }
             photoTimeline.addChangeEventListener(eventListener)
 
             val photo1 = TumblrPost.Photo(100, listOf(TumblrPhotoInfo(listOf(Photo(200, 200, "http://example.com/image-1.jpg")))))
