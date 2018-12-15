@@ -30,9 +30,9 @@ internal class PhotoTimelineTest {
         internal fun addPhotos() {
             val photoTimeline = PhotoTimeline()
 
-            val photo1 = MainApplicationTest.createTestPhotoJsonWithTargetSizeTop()
+            val photo1 = TumblrPost(MainApplicationTest.createTestPhotoJsonWithTargetSizeTop())
             photoTimeline.addPhotos(listOf(
-                    MainApplicationTest.createTestPhotoJsonWithTargetSizeMiddle(),
+                    TumblrPost(MainApplicationTest.createTestPhotoJsonWithTargetSizeMiddle()),
                     photo1
             ))
 
@@ -56,9 +56,9 @@ internal class PhotoTimelineTest {
         internal fun getPhoto() {
             val photoTimeline = PhotoTimeline()
 
-            val photo1 = MainApplicationTest.createTestPhotoJsonWithTargetSizeTop()
+            val photo1 = TumblrPost(MainApplicationTest.createTestPhotoJsonWithTargetSizeTop())
             photoTimeline.addPhotos(listOf(
-                    MainApplicationTest.createTestPhotoJsonWithTargetSizeMiddle(),
+                    TumblrPost(MainApplicationTest.createTestPhotoJsonWithTargetSizeMiddle()),
                     photo1
             ))
 
@@ -87,11 +87,11 @@ internal class PhotoTimelineTest {
             photoTimeline.addPhotos(emptyList())
             photoTimeline.addPhotos(listOf(
                     MainApplicationTest.createTestPhotoJsonWithTargetSizeMiddle()
-            ))
+            ).map(::TumblrPost))
             photoTimeline.addPhotos(listOf(
                     MainApplicationTest.createTestPhotoJsonWithTargetSizeMiddle(),
                     MainApplicationTest.createTestPhotoJsonWithTargetSizeTop()
-            ))
+            ).map(::TumblrPost))
 
             Assertions.assertEquals(
                     listOf(

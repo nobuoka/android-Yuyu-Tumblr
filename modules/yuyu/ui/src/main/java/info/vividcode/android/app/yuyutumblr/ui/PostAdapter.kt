@@ -46,8 +46,8 @@ class PostAdapter(
         // - replace the contents of the view with that element
         try {
             val post = photoTimeline?.getPhoto(position) ?: return
-            if (post.getString("type") == "photo") {
-                val p = MainApplication.getAppropriateSizePhotoObject(post.getJSONArray("photos").getJSONObject(0))
+            if (post.postJson.getString("type") == "photo") {
+                val p = MainApplication.getAppropriateSizePhotoObject(post.postJson.getJSONArray("photos").getJSONObject(0))
                 //String url = .getJSONObject("original_size").getString("url");
 
                 val v = holder.itemView.findViewById<View>(R.id.image) as NetworkImageView

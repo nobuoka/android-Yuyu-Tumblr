@@ -48,14 +48,14 @@ class MainApplication(private val mainView: MainView, tumblrApi: TumblrApi) {
             is TumblrApi.Result.Success -> {
                 try {
                     val posts = result.responseContent.getJSONArray("response")
-                    val pp = ArrayList<JSONObject>()
+                    val pp = ArrayList<TumblrPost>()
                     val length = posts.length()
                     for (i in 0 until length) {
-                        pp.add(posts.getJSONObject(i))
+                        pp.add(TumblrPost(posts.getJSONObject(i)))
                     }
                     photoTimeline.addPhotos(pp)
                     replaceNextPageRequester(pp.lastOrNull()?.let {
-                        photoListNextPageFetchRequesterFactory(it.getInt("timestamp"))
+                        photoListNextPageFetchRequesterFactory(it.postJson.getInt("timestamp"))
                     })
                 } catch (err: JSONException) {
                     logger.error("res: error", err)

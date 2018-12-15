@@ -1,20 +1,18 @@
 package info.vividcode.android.app.yuyutumblr.usecase
 
-import org.json.JSONObject
-
 class PhotoTimeline {
 
-    private val list = mutableListOf<JSONObject>()
+    private val list = mutableListOf<TumblrPost>()
 
     private val changeEventListeners = mutableListOf<(ChangeEvent) -> Unit>()
 
     val size: Int get() = list.size
 
-    val lastItem: JSONObject? get() = list.lastOrNull()
+    val lastItem: TumblrPost? get() = list.lastOrNull()
 
-    fun getPhoto(index: Int): JSONObject = list[index]
+    fun getPhoto(index: Int): TumblrPost = list[index]
 
-    fun addPhotos(photos: List<JSONObject>) {
+    fun addPhotos(photos: List<TumblrPost>) {
         val startPosition = list.size
         val count = photos.size
         list.addAll(photos)
