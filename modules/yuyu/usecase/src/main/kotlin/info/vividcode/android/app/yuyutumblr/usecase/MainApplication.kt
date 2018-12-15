@@ -55,7 +55,7 @@ class MainApplication(private val mainView: MainView, tumblrApi: TumblrApi) {
                     }
                     photoTimeline.addPhotos(pp)
                     replaceNextPageRequester(pp.lastOrNull()?.let {
-                        photoListNextPageFetchRequesterFactory(it.postJson.getInt("timestamp"))
+                        photoListNextPageFetchRequesterFactory(it.timestamp)
                     })
                 } catch (err: JSONException) {
                     logger.error("res: error", err)
