@@ -25,6 +25,10 @@ class PhotoTimeline {
         changeEventListeners.add(listener)
     }
 
+    fun removeChangeEventListener(listener: (ChangeEvent) -> Unit) {
+        changeEventListeners.removeAll { it === listener }
+    }
+
     sealed class ChangeEvent {
         data class ItemsAdded(val startPosition: Int, val itemCount: Int) : ChangeEvent()
     }

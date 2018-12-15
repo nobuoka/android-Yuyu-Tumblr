@@ -1,6 +1,6 @@
 package info.vividcode.android.app.yuyutumblr.usecase
 
-import info.vividcode.android.app.yuyu.utils.Observable
+import info.vividcode.android.app.yuyu.utils.BufferedObservable
 import info.vividcode.android.app.yuyu.utils.Subject
 
 interface PhotoListInitialFetchRequester {
@@ -15,7 +15,7 @@ interface PhotoListInitialFetchRequester {
 
     val state: State
 
-    val responseObservable: Observable<Response>
+    val responseObservable: BufferedObservable<Response>
 
     companion object : (TumblrApi) -> PhotoListInitialFetchRequester {
         override fun invoke(tumblrApi: TumblrApi): PhotoListInitialFetchRequester = Impl(tumblrApi)

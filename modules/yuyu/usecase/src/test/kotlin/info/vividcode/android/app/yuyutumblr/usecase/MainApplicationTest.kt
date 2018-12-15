@@ -15,26 +15,38 @@ internal class MainApplicationTest {
 
     init {
         every { mockMainView.setRefreshEventListener(any()) } returns Unit
+        every { mockMainView.unsetRefreshEventListener() } returns Unit
         every { mockMainView.bindMainApplication(any()) } returns Unit
+        every { mockMainView.unbindMainApplication() } returns Unit
         every { mockMainView.stopRefreshingIndicator() } returns Unit
     }
 
-    @Test
-    internal fun init() {
-        val mainApplication = MainApplication(mockMainView, mockTumblrApi)
+    val mainApplication = MainApplication(
+            mockMainView,
+            MainApplication.RetainLifecycleScope(mockTumblrApi)
+    )
 
-        mainApplication.init()
+    @Test
+    internal fun activate() {
+        mainApplication.activate()
 
         verify(exactly = 1) { mockMainView.setRefreshEventListener(any()) }
         verify(exactly = 1) { mockMainView.bindMainApplication(any()) }
+    }
+
+    @Test
+    internal fun deactivate() {
+        mainApplication.deactivate()
+
+        verify(exactly = 1) { mockMainView.unsetRefreshEventListener() }
+        verify(exactly = 1) { mockMainView.unbindMainApplication() }
     }
 
     @Nested
     internal inner class UpdatePosts {
         @Test
         internal fun resultSuccess_noPhoto() {
-            val mainApplication = MainApplication(mockMainView, mockTumblrApi)
-            mainApplication.init()
+            mainApplication.activate()
 
             val lambdaSlot = CapturingSlot<(TumblrApi.Result<List<TumblrPost>>) -> Unit>()
             every { mockTumblrApi.fetchPosts(any(), capture(lambdaSlot)) } answers {
@@ -55,8 +67,7 @@ internal class MainApplicationTest {
 
         @Test
         internal fun resultSuccess_photoExists() {
-            val mainApplication = MainApplication(mockMainView, mockTumblrApi)
-            mainApplication.init()
+            mainApplication.activate()
 
             val lambdaSlot = CapturingSlot<(TumblrApi.Result<List<TumblrPost>>) -> Unit>()
             every { mockTumblrApi.fetchPosts(any(), capture(lambdaSlot)) } answers {
@@ -87,8 +98,7 @@ internal class MainApplicationTest {
 
         @Test
         internal fun resultFailure() {
-            val mainApplication = MainApplication(mockMainView, mockTumblrApi)
-            mainApplication.init()
+            mainApplication.activate()
 
             val lambdaSlot = CapturingSlot<(TumblrApi.Result<List<TumblrPost>>) -> Unit>()
             every { mockTumblrApi.fetchPosts(any(), capture(lambdaSlot)) } answers {

@@ -1,21 +1,23 @@
 package info.vividcode.android.app.yuyu.utils
 
-class Subject<T> : Observable<T>, Observer<T> {
+class Subject<T> : BufferedObservable<T>, Observer<T> {
 
-    private val observers = mutableListOf<Observer<T>>()
+    private var observer: Observer<T>? = null
 
-    private val observersSnapshot get() = observers.toList()
+    private val buffer: MutableList<T> = mutableListOf()
 
-    override operator fun invoke(response: T) {
-        observersSnapshot.forEach { it(response) }
+    override operator fun invoke(response: T): Unit = synchronized(this) {
+        observer?.also { it.invoke(response) } ?: buffer.add(response)
     }
 
-    override fun connect(observer: Observer<T>) {
-        observers.add(observer)
+    override fun setObserver(observer: Observer<T>): Unit = synchronized(this) {
+        this.observer = observer
+        buffer.forEach(observer)
+        buffer.clear()
     }
 
-    override fun disconnectAll() {
-        observers.clear()
+    override fun unsetObserver(): Unit = synchronized(this) {
+        this.observer = null
     }
 
 }

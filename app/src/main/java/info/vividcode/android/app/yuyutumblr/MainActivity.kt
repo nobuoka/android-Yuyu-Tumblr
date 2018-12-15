@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import info.vividcode.android.app.yuyutumblr.ui.AndroidMainView
 import info.vividcode.android.app.yuyutumblr.usecase.MainApplication
 import info.vividcode.android.app.yuyutumblr.utils.RequestQueueLifecycleAwareContainer
+import info.vividcode.android.app.yuyutumblr.utils.getRetainContainer
 import info.vividcode.android.app.yuyutumblr.web.TumblrWebApi
 import okhttp3.OkHttpClient
 
@@ -21,21 +22,30 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val retainContainer = supportFragmentManager.getRetainContainer("test")
+        val mainApplicationRetainLifecycleContainer = retainContainer.getOrCreate {
+            val tumblrApi = TumblrWebApi(OkHttpClient.Builder().build(), callbackExecutor)
+            MainApplication.RetainLifecycleScope(tumblrApi)
+        }
 
         val requestQueueContainer = RequestQueueLifecycleAwareContainer(this)
         lifecycle.addObserver(requestQueueContainer)
 
         val requestQueue = requestQueueContainer.requestQueue
         val mainView = AndroidMainView.setupActivity(this, requestQueue)
-        val tumblrApi = TumblrWebApi(OkHttpClient.Builder().build(), callbackExecutor)
 
-        mainApplication = MainApplication(mainView, tumblrApi)
-        mainApplication.init()
+        mainApplication = MainApplication(mainView, mainApplicationRetainLifecycleContainer)
     }
 
-    override fun onResume() {
-        super.onResume()
-        mainApplication.updatePosts()
+    override fun onStart() {
+        super.onStart()
+        mainApplication.activate()
+        mainApplication.requestInitialLoadIfNeeded()
+    }
+
+    override fun onStop() {
+        mainApplication.deactivate()
+        super.onStop()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
