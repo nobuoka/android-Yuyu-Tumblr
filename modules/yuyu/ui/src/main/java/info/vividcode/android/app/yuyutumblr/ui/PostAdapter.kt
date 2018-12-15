@@ -47,7 +47,7 @@ class PostAdapter(
         try {
             val post = photoTimeline?.getPhoto(position) ?: return
             if (post.type == "photo") {
-                val p = MainApplication.getAppropriateSizePhotoObject(post.photos.getJSONObject(0))
+                val p = MainApplication.getAppropriateSizePhotoObject(post.photos.first())
                 //String url = .getJSONObject("original_size").getString("url");
 
                 val v = holder.itemView.findViewById<View>(R.id.image) as NetworkImageView

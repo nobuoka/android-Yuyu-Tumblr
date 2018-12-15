@@ -115,9 +115,9 @@ internal class MainApplicationTest {
     internal inner class GetAppropriateSizePhotoObjectMethodTest {
         @Test
         internal fun normal_targetSizePosition_top() {
-            val json = createTestPhotoJsonWithTargetSizeTop()
+            val photoInfo = TumblrPhotoInfo(createTestPhotoJsonWithTargetSizeTop())
 
-            val photo = MainApplication.getAppropriateSizePhotoObject(json)
+            val photo = MainApplication.getAppropriateSizePhotoObject(photoInfo)
 
             val expected = Photo(400, 600, "http://example.com/af8c96/tumblr_mnz8le_400.jpg")
             Assertions.assertEquals(expected, photo)
@@ -125,9 +125,9 @@ internal class MainApplicationTest {
 
         @Test
         internal fun normal_targetSizePosition_middle() {
-            val json = createTestPhotoJsonWithTargetSizeMiddle()
+            val photoInfo = TumblrPhotoInfo(createTestPhotoJsonWithTargetSizeMiddle())
 
-            val photo = MainApplication.getAppropriateSizePhotoObject(json)
+            val photo = MainApplication.getAppropriateSizePhotoObject(photoInfo)
 
             val expected = Photo(400, 600, "http://example.com/af8c96/tumblr_mnz8le_400.jpg")
             Assertions.assertEquals(expected, photo)
@@ -135,9 +135,9 @@ internal class MainApplicationTest {
 
         @Test
         internal fun invalidJson() {
-            val json = JSONObject("{}")
+            val photoInfo = TumblrPhotoInfo(JSONObject("{}"))
 
-            val photo = MainApplication.getAppropriateSizePhotoObject(json)
+            val photo = MainApplication.getAppropriateSizePhotoObject(photoInfo)
 
             Assertions.assertNull(photo)
         }
