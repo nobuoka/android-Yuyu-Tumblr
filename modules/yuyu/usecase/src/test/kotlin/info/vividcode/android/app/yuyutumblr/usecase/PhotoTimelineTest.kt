@@ -110,6 +110,24 @@ internal class PhotoTimelineTest {
         }
 
         @Test
+        internal fun setAndUnsetListener_removeNotAddedListener() {
+            val photoTimeline = PhotoTimeline()
+            photoTimeline.addChangeEventListener(eventListener)
+            val eventListenerNotAdded: (PhotoTimeline.ChangeEvent) -> Unit = {}
+
+            // Act
+            photoTimeline.removeChangeEventListener(eventListenerNotAdded) // remove not added listener
+            val photo1 = TumblrPost.Photo(100, listOf(TumblrPhotoInfo(listOf(Photo(200, 200, "http://example.com/image-1.jpg")))))
+            photoTimeline.addPhotos(listOf(photo1))
+
+            // Assert
+            Assertions.assertEquals(
+                    listOf(PhotoTimeline.ChangeEvent.ItemsAdded(0, 1)),
+                    eventListener.receivedEvents
+            )
+        }
+
+        @Test
         internal fun getFromEmpty() {
             val photoTimeline = PhotoTimeline()
 
