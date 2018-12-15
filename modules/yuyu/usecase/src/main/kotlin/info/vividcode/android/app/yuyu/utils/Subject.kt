@@ -6,6 +6,9 @@ class Subject<T> : BufferedObservable<T>, Observer<T> {
 
     private val buffer: MutableList<T> = mutableListOf()
 
+    override val isActive: Boolean
+        get() = synchronized(this) { observer != null }
+
     override operator fun invoke(response: T): Unit = synchronized(this) {
         observer?.also { it.invoke(response) } ?: buffer.add(response)
     }

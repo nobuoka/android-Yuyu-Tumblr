@@ -29,6 +29,9 @@ class MainApplication(
 
     val photoTimeline get() = retainLifecycleScope.photoTimeline
 
+    private val nextPageFetchRequesterObserver: Observer<PhotoListNextPageFetchRequester.Response> =
+            { response -> updateTimeline(response.result) }
+
     fun activate() {
         mainView.setRefreshEventListener(::updatePosts)
         mainView.bindMainApplication(this)
@@ -36,9 +39,8 @@ class MainApplication(
         retainLifecycleScope.photoListInitialFetchRequester.responseObservable.setObserver { response ->
             updateTimeline(response.result)
         }
-        retainLifecycleScope.photoListNextPageFetchRequester?.responseObservable?.setObserver { response ->
-            updateTimeline(response.result)
-        }
+        retainLifecycleScope.photoListNextPageFetchRequester?.
+                responseObservable?.setObserver(nextPageFetchRequesterObserver)
     }
 
     fun deactivate() {
@@ -50,9 +52,7 @@ class MainApplication(
     }
 
     private fun replaceNextPageRequester(nextPageFetchRequester: PhotoListNextPageFetchRequester?) {
-        retainLifecycleScope.replaceNextPageRequester(nextPageFetchRequester) { response ->
-            updateTimeline(response.result)
-        }
+        retainLifecycleScope.replaceNextPageRequester(nextPageFetchRequester, nextPageFetchRequesterObserver)
     }
 
     fun requestInitialLoadIfNeeded() {
