@@ -44,5 +44,5 @@ data class TumblrPost(val postJson: JSONObject) {
     val timestamp: Int get() = postJson.getInt("timestamp")
     /** If [type] is "photo" then this return json array, otherwise this will throw exception. */
     val photos: List<TumblrPhotoInfo>
-        get() = postJson.getJSONArray("photos").toList().map { TumblrPhotoInfo(it as JSONObject) }
+        get() = postJson.getJSONArray("photos").map { TumblrPhotoInfo(it as JSONObject) }
 }

@@ -1,8 +1,6 @@
 package info.vividcode.android.app.yuyutumblr.usecase
 
 import org.json.JSONException
-import org.json.JSONObject
-import java.util.*
 
 class MainApplication(private val mainView: MainView, tumblrApi: TumblrApi) {
 
@@ -41,20 +39,15 @@ class MainApplication(private val mainView: MainView, tumblrApi: TumblrApi) {
         }
     }
 
-    private fun updateTimeline(result: TumblrApi.Result<JSONObject>) {
+    private fun updateTimeline(result: TumblrApi.Result<List<TumblrPost>>) {
         mainView.stopRefreshingIndicator()
 
         when (result) {
             is TumblrApi.Result.Success -> {
                 try {
-                    val posts = result.responseContent.getJSONArray("response")
-                    val pp = ArrayList<TumblrPost>()
-                    val length = posts.length()
-                    for (i in 0 until length) {
-                        pp.add(TumblrPost(posts.getJSONObject(i)))
-                    }
-                    photoTimeline.addPhotos(pp)
-                    replaceNextPageRequester(pp.lastOrNull()?.let {
+                    val posts = result.responseContent
+                    photoTimeline.addPhotos(posts)
+                    replaceNextPageRequester(posts.lastOrNull()?.let {
                         photoListNextPageFetchRequesterFactory(it.timestamp)
                     })
                 } catch (err: JSONException) {

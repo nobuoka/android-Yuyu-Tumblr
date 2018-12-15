@@ -2,11 +2,10 @@ package info.vividcode.android.app.yuyutumblr.usecase
 
 import info.vividcode.android.app.yuyu.utils.Observable
 import info.vividcode.android.app.yuyu.utils.Subject
-import org.json.JSONObject
 
 interface PhotoListNextPageFetchRequester {
 
-    class Response(val result: TumblrApi.Result<JSONObject>)
+    class Response(val result: TumblrApi.Result<List<TumblrPost>>)
 
     enum class State {
         Idle, Progress

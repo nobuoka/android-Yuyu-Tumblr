@@ -37,11 +37,9 @@ internal class MainApplicationTest {
             val mainApplication = MainApplication(mockMainView, mockTumblrApi)
             mainApplication.init()
 
-            val lambdaSlot = CapturingSlot<(TumblrApi.Result<JSONObject>) -> Unit>()
+            val lambdaSlot = CapturingSlot<(TumblrApi.Result<List<TumblrPost>>) -> Unit>()
             every { mockTumblrApi.fetchPosts(any(), capture(lambdaSlot)) } answers {
-                lambdaSlot.captured(TumblrApi.Result.Success(JSONObject(
-                        """{ "response": [] }"""
-                )))
+                lambdaSlot.captured(TumblrApi.Result.Success(emptyList()))
             }
 
             mainApplication.updatePosts()
@@ -61,25 +59,23 @@ internal class MainApplicationTest {
             val mainApplication = MainApplication(mockMainView, mockTumblrApi)
             mainApplication.init()
 
-            val lambdaSlot = CapturingSlot<(TumblrApi.Result<JSONObject>) -> Unit>()
+            val lambdaSlot = CapturingSlot<(TumblrApi.Result<List<TumblrPost>>) -> Unit>()
             every { mockTumblrApi.fetchPosts(any(), capture(lambdaSlot)) } answers {
-                lambdaSlot.captured(TumblrApi.Result.Success(JSONObject(
-                        """{ "response": [
-                            |  {
-                            |    "timestamp": 1370531100,
-                            |    "photos": [
-                            |      {
-                            |        "caption": "",
-                            |        "alt_sizes": [
-                            |          {"width":400,"height":600,"url":"http://example.com/af8c96/tumblr_mnz8le_400.jpg"},
-                            |          {"width":250,"height":375,"url":"http://example.com/af8c96/tumblr_mnz8le_250.jpg"}
-                            |        ],
-                            |        "original_size": {"width":400,"height":600,"url":"http://example.com/af8c96/tumblr_mnz8le_400.jpg"}
-                            |      }
-                            |    ]
-                            |  }
-                            |] }""".trimMargin()
-                )))
+                lambdaSlot.captured(TumblrApi.Result.Success(listOf(TumblrPost(JSONObject(
+                        """{
+                            |  "timestamp": 1370531100,
+                            |  "photos": [
+                            |    {
+                            |      "caption": "",
+                            |      "alt_sizes": [
+                            |        {"width":400,"height":600,"url":"http://example.com/af8c96/tumblr_mnz8le_400.jpg"},
+                            |        {"width":250,"height":375,"url":"http://example.com/af8c96/tumblr_mnz8le_250.jpg"}
+                            |      ],
+                            |      "original_size": {"width":400,"height":600,"url":"http://example.com/af8c96/tumblr_mnz8le_400.jpg"}
+                            |    }
+                            |  ]
+                            |}""".trimMargin()
+                )))))
             }
 
             mainApplication.updatePosts()
@@ -99,7 +95,7 @@ internal class MainApplicationTest {
             val mainApplication = MainApplication(mockMainView, mockTumblrApi)
             mainApplication.init()
 
-            val lambdaSlot = CapturingSlot<(TumblrApi.Result<JSONObject>) -> Unit>()
+            val lambdaSlot = CapturingSlot<(TumblrApi.Result<List<TumblrPost>>) -> Unit>()
             every { mockTumblrApi.fetchPosts(any(), capture(lambdaSlot)) } answers {
                 lambdaSlot.captured(TumblrApi.Result.Failure(RuntimeException("Test exception")))
             }
