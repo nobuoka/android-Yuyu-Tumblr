@@ -24,7 +24,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         val retainContainer = supportFragmentManager.getRetainContainer("test")
         val mainApplicationRetainLifecycleContainer = retainContainer.getOrCreate {
-            val tumblrApi = TumblrWebApi(OkHttpClient.Builder().build(), callbackExecutor)
+            val tumblrApi = TumblrWebApi(BuildConfig.TUMBLR_API_KEY, OkHttpClient.Builder().build(), callbackExecutor)
             MainApplication.RetainLifecycleScope(tumblrApi)
         }
 

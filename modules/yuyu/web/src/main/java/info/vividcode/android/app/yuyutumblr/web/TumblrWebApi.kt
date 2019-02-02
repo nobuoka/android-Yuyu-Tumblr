@@ -7,17 +7,22 @@ import okhttp3.Callback
 import okhttp3.Request
 import org.json.JSONObject
 import java.io.IOException
+import java.net.URLEncoder
 
-class TumblrWebApi(private val callFactory: Call.Factory, private val callbackExecutor: CallbackExecutor) : TumblrApi {
+class TumblrWebApi(
+        private val apiKey: String,
+        private val callFactory: Call.Factory,
+        private val callbackExecutor: CallbackExecutor
+) : TumblrApi {
 
     interface CallbackExecutor {
         fun <T> execute(value: T, execution: (T) -> Unit)
     }
 
     override fun fetchPosts(lastTimestamp: Int?, callback: (TumblrApi.Result<List<TumblrPost>>) -> Unit) {
-        // API キーは Tumblr のドキュメントにのってたやつ。 ほんとは各自取得する必要がある?
         // http://www.tumblr.com/docs/en/api/v2#tagged-method
-        var uri = "https://api.tumblr.com/v2/tagged?tag=%E3%82%86%E3%82%86%E5%BC%8F" + "&api_key=fuiKNFp9vQFvjLNvx4sUwti4Yb5yGutBN4Xh10LXZhhRKjWlV4"
+        var uri = "https://api.tumblr.com/v2/tagged?tag=%E3%82%86%E3%82%86%E5%BC%8F" +
+                "&api_key=${URLEncoder.encode(apiKey, "UTF-8")}"
         if (lastTimestamp != null) {
             uri += "&before=$lastTimestamp"
         }

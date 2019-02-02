@@ -12,6 +12,8 @@ steps:
     publishJUnitResults: true
     testResultsFiles: '**/TEST-*.xml'
     tasks: 'build'
+  env:
+    'TUMBLR_API_KEY': '$(tumblrApiKey)'
 - task: Bash@3
   inputs:
     targetType: 'inline'
