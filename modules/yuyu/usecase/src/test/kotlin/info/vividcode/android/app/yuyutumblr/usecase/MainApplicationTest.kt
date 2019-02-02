@@ -15,8 +15,8 @@ internal class MainApplicationTest {
     private val mockTumblrApi = mockk<TumblrApi>()
 
     init {
-        every { mockMainView.setRefreshEventListener(any()) } returns Unit
-        every { mockMainView.unsetRefreshEventListener() } returns Unit
+        every { mockMainView.setUserInputEventListener(any()) } returns Unit
+        every { mockMainView.unsetUserInputEventListener() } returns Unit
         every { mockMainView.bindMainApplication(any()) } returns Unit
         every { mockMainView.unbindMainApplication() } returns Unit
         every { mockMainView.stopRefreshingIndicator() } returns Unit
@@ -32,7 +32,7 @@ internal class MainApplicationTest {
         mainApplication.activate()
 
         // Assert
-        verify(exactly = 1) { mockMainView.setRefreshEventListener(any()) }
+        verify(exactly = 1) { mockMainView.setUserInputEventListener(any()) }
         verify(exactly = 1) { mockMainView.bindMainApplication(any()) }
         assertTrue(retainLifecycleScope.photoListInitialFetchRequester.responseObservable.isActive)
         assertNull(retainLifecycleScope.photoListNextPageFetchRequester)
@@ -51,7 +51,7 @@ internal class MainApplicationTest {
         mainApplication.deactivate()
         verify(exactly = 1) { mockMainView.stopRefreshingIndicator() }
         verify(exactly = 1) { mockTumblrApi.fetchPosts(isNull(), any()) }
-        verify(exactly = 1) { mockMainView.setRefreshEventListener(any()) }
+        verify(exactly = 1) { mockMainView.setUserInputEventListener(any()) }
         verify(exactly = 1) { mockMainView.bindMainApplication(any()) }
 
         // Act
@@ -59,7 +59,7 @@ internal class MainApplicationTest {
         mainApplicationWithRetainedData.activate()
 
         // Assert
-        verify(exactly = 2) { mockMainView.setRefreshEventListener(any()) }
+        verify(exactly = 2) { mockMainView.setUserInputEventListener(any()) }
         verify(exactly = 2) { mockMainView.bindMainApplication(any()) }
         assertTrue(retainLifecycleScope.photoListInitialFetchRequester.responseObservable.isActive)
         assertTrue(retainLifecycleScope.photoListNextPageFetchRequester?.responseObservable?.isActive == true)
@@ -74,7 +74,7 @@ internal class MainApplicationTest {
         mainApplication.deactivate()
 
         // Assert
-        verify(exactly = 1) { mockMainView.unsetRefreshEventListener() }
+        verify(exactly = 1) { mockMainView.unsetUserInputEventListener() }
         verify(exactly = 1) { mockMainView.unbindMainApplication() }
         assertFalse(retainLifecycleScope.photoListInitialFetchRequester.responseObservable.isActive)
         assertNull(retainLifecycleScope.photoListNextPageFetchRequester)
@@ -97,7 +97,7 @@ internal class MainApplicationTest {
         mainApplication.deactivate()
 
         // Assert
-        verify(exactly = 1) { mockMainView.unsetRefreshEventListener() }
+        verify(exactly = 1) { mockMainView.unsetUserInputEventListener() }
         verify(exactly = 1) { mockMainView.unbindMainApplication() }
         assertFalse(retainLifecycleScope.photoListInitialFetchRequester.responseObservable.isActive)
         assertEquals(false, retainLifecycleScope.photoListNextPageFetchRequester?.responseObservable?.isActive)

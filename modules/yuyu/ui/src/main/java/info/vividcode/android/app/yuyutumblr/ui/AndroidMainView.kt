@@ -4,8 +4,8 @@ import android.app.Activity
 import android.content.Context
 import android.graphics.Color
 import android.view.View
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.ImageLoader
 import info.vividcode.android.app.yuyu.ui.R
@@ -18,7 +18,7 @@ class AndroidMainView private constructor(
         private val adapter: PostAdapter
 ) : MainView {
 
-    private var internalRefreshEventListener: (() -> Unit)? = null
+    private var userInputEventListener: MainView.UserInputEventListener? = null
 
     companion object {
         fun setupActivity(activity: Activity, requestQueue: RequestQueue): MainView {
@@ -46,15 +46,15 @@ class AndroidMainView private constructor(
         recyclerView.adapter = adapter
 
         swipeRefreshLayout.setColorSchemeColors(Color.RED)
-        swipeRefreshLayout.setOnRefreshListener { internalRefreshEventListener?.invoke() }
+        swipeRefreshLayout.setOnRefreshListener { userInputEventListener?.onRefreshRequest() }
     }
 
-    override fun setRefreshEventListener(listener: () -> Unit) {
-        internalRefreshEventListener = listener
+    override fun setUserInputEventListener(listener: MainView.UserInputEventListener) {
+        userInputEventListener = listener
     }
 
-    override fun unsetRefreshEventListener() {
-        internalRefreshEventListener = null
+    override fun unsetUserInputEventListener() {
+        userInputEventListener = null
     }
 
     override fun stopRefreshingIndicator() {
@@ -62,11 +62,11 @@ class AndroidMainView private constructor(
     }
 
     override fun bindMainApplication(mainApplication: MainApplication) {
-        adapter.bindPhotoTimeline(mainApplication.photoTimeline)
+        adapter.bindModel(mainApplication.photoTimeline, mainApplication.nextPageLoaderState, mainApplication::requestNextPage)
     }
 
     override fun unbindMainApplication() {
-        adapter.unbindPhotoTimeline()
+        adapter.unbindModel()
     }
 
 }

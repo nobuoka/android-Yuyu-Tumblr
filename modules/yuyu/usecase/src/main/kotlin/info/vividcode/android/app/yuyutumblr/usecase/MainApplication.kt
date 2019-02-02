@@ -29,11 +29,22 @@ class MainApplication(
 
     val photoTimeline get() = retainLifecycleScope.photoTimeline
 
+    val nextPageLoaderState = NextPageLoaderStateHolder(NextPageLoaderStateHolder.State.NoNextPage)
+
     private val nextPageFetchRequesterObserver: Observer<PhotoListNextPageFetchRequester.Response> =
             { response -> updateTimeline(response.result) }
 
+    private val userInputEventListener = object : MainView.UserInputEventListener {
+        override fun onRefreshRequest() {
+            updatePosts()
+        }
+        override fun onNextPageLoadRequest() {
+            requestNextPage()
+        }
+    }
+
     fun activate() {
-        mainView.setRefreshEventListener(::updatePosts)
+        mainView.setUserInputEventListener(userInputEventListener)
         mainView.bindMainApplication(this)
 
         retainLifecycleScope.photoListInitialFetchRequester.responseObservable.setObserver { response ->
@@ -48,11 +59,16 @@ class MainApplication(
         retainLifecycleScope.photoListNextPageFetchRequester?.responseObservable?.unsetObserver()
 
         mainView.unbindMainApplication()
-        mainView.unsetRefreshEventListener()
+        mainView.unsetUserInputEventListener()
     }
 
     private fun replaceNextPageRequester(nextPageFetchRequester: PhotoListNextPageFetchRequester?) {
         retainLifecycleScope.replaceNextPageRequester(nextPageFetchRequester, nextPageFetchRequesterObserver)
+        if (nextPageFetchRequester != null) {
+            nextPageLoaderState.updateState(NextPageLoaderStateHolder.State.Idle)
+        } else {
+            nextPageLoaderState.updateState(NextPageLoaderStateHolder.State.NoNextPage)
+        }
     }
 
     fun requestInitialLoadIfNeeded() {
@@ -64,9 +80,20 @@ class MainApplication(
     fun updatePosts() {
         retainLifecycleScope.photoListNextPageFetchRequester.let { requester ->
             if (requester != null) {
-                requester()
+                requestNextPage()
             } else {
                 retainLifecycleScope.photoListInitialFetchRequester()
+            }
+        }
+    }
+
+    fun requestNextPage() {
+        retainLifecycleScope.photoListNextPageFetchRequester.also { requester ->
+            if (requester != null) {
+                requester()
+                nextPageLoaderState.updateState(NextPageLoaderStateHolder.State.Progress)
+            } else {
+                logger.warn("NextPageFetchRequester is null but next page load is requested")
             }
         }
     }
@@ -84,6 +111,8 @@ class MainApplication(
             }
             is TumblrApi.Result.Failure -> {
                 logger.error("res: error", result.exception)
+                val errorState = NextPageLoaderStateHolder.State.Error(result.exception.message ?: "${result.exception}")
+                nextPageLoaderState.updateState(errorState)
             }
         } as? Unit?
     }
