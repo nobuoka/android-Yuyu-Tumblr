@@ -12,7 +12,8 @@ import java.net.URLEncoder
 class TumblrWebApi(
         private val apiKey: String,
         private val callFactory: Call.Factory,
-        private val callbackExecutor: CallbackExecutor
+        private val callbackExecutor: CallbackExecutor,
+        private val tumblrWebApiBaseUrl: String = "https://api.tumblr.com"
 ) : TumblrApi {
 
     interface CallbackExecutor {
@@ -21,7 +22,7 @@ class TumblrWebApi(
 
     override fun fetchPosts(lastTimestamp: Int?, callback: (TumblrApi.Result<List<TumblrPost>>) -> Unit) {
         // http://www.tumblr.com/docs/en/api/v2#tagged-method
-        var uri = "https://api.tumblr.com/v2/tagged?tag=%E3%82%86%E3%82%86%E5%BC%8F" +
+        var uri = "$tumblrWebApiBaseUrl/v2/tagged?tag=%E3%82%86%E3%82%86%E5%BC%8F" +
                 "&api_key=${URLEncoder.encode(apiKey, "UTF-8")}"
         if (lastTimestamp != null) {
             uri += "&before=$lastTimestamp"
