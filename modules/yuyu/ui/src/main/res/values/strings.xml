@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="next_page_indicator_idle_message">Next page</string>
+    <string name="next_page_indicator_no_next_page_message">No next page</string>
+    <string name="next_page_indicator_error_message">Error</string>
+</resources>
