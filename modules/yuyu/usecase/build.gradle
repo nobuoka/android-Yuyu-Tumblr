@@ -26,6 +26,7 @@ check.dependsOn jacocoTestReport
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.1.1'
     implementation 'org.slf4j:slf4j-api:1.7.25'
     testImplementation 'org.slf4j:slf4j-simple:1.7.25'
 

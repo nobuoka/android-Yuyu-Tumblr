@@ -1,6 +1,10 @@
 package info.vividcode.android.app.yuyutumblr.usecase
 
 import info.vividcode.android.app.yuyu.utils.Observer
+import info.vividcode.android.app.yuyutumblr.usecase.tools.UseCaseDriver
+import kotlinx.coroutines.*
+
+val backgroundCoroutineContext = newFixedThreadPoolContext(4, "BackgroundCoroutineContext")
 
 class MainApplication(
         private val mainView: MainView,
@@ -10,6 +14,14 @@ class MainApplication(
     class RetainLifecycleScope(
             tumblrApi: TumblrApi
     ) {
+        val retainLifecycleCoroutineScope = CoroutineScope(Dispatchers.Main)
+        val showMainTimelineUseCaseDriver = UseCaseDriver(
+                ShowMainTimelineUseCase, retainLifecycleCoroutineScope,
+                Dispatchers.Main, backgroundCoroutineContext,
+                object : ShowMainTimelineUseCase.BackgroundEnvironment {
+                    override val httpClient: String = "Http Client"
+                }
+        )
         val photoListInitialFetchRequester = PhotoListInitialFetchRequester(tumblrApi)
         var photoListNextPageFetchRequester: PhotoListNextPageFetchRequester? = null
 
@@ -47,6 +59,13 @@ class MainApplication(
         mainView.setUserInputEventListener(userInputEventListener)
         mainView.bindMainApplication(this)
 
+        retainLifecycleScope.showMainTimelineUseCaseDriver.activate(object : ShowMainTimelineUseCase.ForegroundEnvironment {
+            override val mainTimelineView: MainTimelineView = object : MainTimelineView {
+                override fun showProgressBar() {
+                    println("show progress bar")
+                }
+            }
+        })
         retainLifecycleScope.photoListInitialFetchRequester.responseObservable.setObserver { response ->
             updateTimeline(response.result)
         }
@@ -57,6 +76,7 @@ class MainApplication(
     fun deactivate() {
         retainLifecycleScope.photoListInitialFetchRequester.responseObservable.unsetObserver()
         retainLifecycleScope.photoListNextPageFetchRequester?.responseObservable?.unsetObserver()
+        retainLifecycleScope.showMainTimelineUseCaseDriver.deactivate()
 
         mainView.unbindMainApplication()
         mainView.unsetUserInputEventListener()
@@ -74,6 +94,7 @@ class MainApplication(
     fun requestInitialLoadIfNeeded() {
         if (photoTimeline.size == 0) {
             updatePosts()
+            retainLifecycleScope.showMainTimelineUseCaseDriver.handleCommand(ShowMainTimelineUseCase.Command.Start)
         }
     }
 
